@@ -1,0 +1,41 @@
+# Local agent and workspace metadata
+.agents/
+.codex/
+
+# Dependencies and build outputs
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Test outputs
+playwright-report/
+test-results/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated document QA artifacts
+qa_render/
+a11y_report.json
+モンスター育成RPG_PWA実現可能性検討書.docx
+モンスター育成RPG_PWA実現可能性検討書_clean.docx
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+.idea/
+.vscode/
