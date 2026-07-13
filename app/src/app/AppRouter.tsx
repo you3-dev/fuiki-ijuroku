@@ -59,6 +59,8 @@ export function AppRouter() {
     state.expedition.phase === 'tower-result' ||
     state.expedition.phase === 'waterway-battle' ||
     state.expedition.phase === 'waterway-result' ||
+    state.expedition.phase === 'grove-encounter' ||
+    state.expedition.phase === 'grove-result' ||
     (state.expedition.phase === 'recruit-result' && saveStatus !== 'saved')
 
   return (

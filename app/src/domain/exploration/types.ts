@@ -3,6 +3,8 @@ export type RegionNodeId =
   | 'graymoss-shallows'
   | 'observation-tower'
   | 'sunken-waterway'
+  | 'filter-grove'
+  | 'purification-core'
 
 export type ExpeditionPhase =
   | 'idle'
@@ -20,6 +22,11 @@ export type ExpeditionPhase =
   | 'waterway-battle'
   | 'waterway-result'
   | 'waterway-complete'
+  | 'grove-event'
+  | 'grove-encounter'
+  | 'grove-result'
+  | 'grove-complete'
+  | 'core-preview'
 
 export type TutorialBattleState = {
   round: number
@@ -37,6 +44,21 @@ export type TutorialBattleState = {
     | 'calmed'
 }
 
+export type GroveEncounterState = {
+  round: number
+  vigilance: number
+  waveObserved: boolean
+  emitterStopped: boolean
+  stableFragmentOffered: boolean
+  shellIntact: boolean
+  lastAction:
+    | 'encountered'
+    | 'wave-observed'
+    | 'emitter-stopped'
+    | 'fragment-offered'
+    | 'shell-damaged'
+}
+
 export type ExpeditionState = {
   phase: ExpeditionPhase
   currentNodeId: RegionNodeId | null
@@ -50,6 +72,9 @@ export type ExpeditionState = {
   waterwayApproach: WaterwayApproach | null
   waterwayBattle: WaterwayBattleState | null
   waterwayCompleted: boolean
+  groveEncounter: GroveEncounterState | null
+  groveCompleted: boolean
+  relicCatalystObtained: boolean
 }
 
 export type ExplorationAction =
@@ -69,6 +94,18 @@ export type ExplorationAction =
   | { type: 'waterwayBattleCommand'; command: WaterwayBattleCommand }
   | { type: 'retryWaterwayEncounter' }
   | { type: 'flushWaterwayValve' }
+  | { type: 'beginGroveEncounter' }
+  | {
+      type: 'groveAction'
+      action:
+        | 'observeWave'
+        | 'stopEmitter'
+        | 'offerStableFragment'
+        | 'damageShell'
+        | 'requestCooperation'
+    }
+  | { type: 'retryGroveEncounter' }
+  | { type: 'completeGroveSurvey' }
   | { type: 'returnToLaboratory' }
 
 export type ExplorationTransition = {
@@ -77,6 +114,8 @@ export type ExplorationTransition = {
   recruitedKirihane?: boolean
   completedTower?: boolean
   completedWaterway?: boolean
+  recruitedRekimatoi?: boolean
+  completedGrove?: boolean
 }
 import type {
   BattleCommand,

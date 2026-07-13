@@ -6,9 +6,11 @@ import { graymossNodes } from '../../domain/exploration/data'
 import type { ExplorationAction } from '../../domain/exploration/types'
 import { TowerBattlePanel } from './TowerBattlePanel'
 import { WaterwayBattlePanel } from './WaterwayBattlePanel'
+import { FilterGrovePanel } from './FilterGrovePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
 const KIRIHANE_ID = 'creature-kirihane-tower-001'
+const REKIMATOI_ID = 'creature-rekimatoi-grove-001'
 
 function BattlePanel({
   runAction,
@@ -117,9 +119,17 @@ export function ExplorationPage() {
         (creature) => creature?.id === KIRIHANE_ID,
       )
     : undefined
+  const recruitedRekimatoi = state
+    ? [...state.party.front, ...state.party.reserve].find(
+        (creature) => creature?.id === REKIMATOI_ID,
+      )
+    : undefined
   const [nickname, setNickname] = useState(recruited?.displayName ?? 'スミワタリ')
   const [kirihaneNickname, setKirihaneNickname] = useState(
     recruitedKirihane?.displayName ?? 'キリハネ',
+  )
+  const [rekimatoiNickname, setRekimatoiNickname] = useState(
+    recruitedRekimatoi?.displayName ?? 'レキマトイ',
   )
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -130,6 +140,10 @@ export function ExplorationPage() {
   useEffect(() => {
     if (recruitedKirihane) setKirihaneNickname(recruitedKirihane.displayName)
   }, [recruitedKirihane])
+
+  useEffect(() => {
+    if (recruitedRekimatoi) setRekimatoiNickname(recruitedRekimatoi.displayName)
+  }, [recruitedRekimatoi])
 
   if (!state || state.expedition.phase === 'idle') {
     return <Navigate to="/laboratory" replace />
@@ -189,6 +203,26 @@ export function ExplorationPage() {
     }
   }
 
+  async function finishGroveResult() {
+    setActionError(null)
+    try {
+      if (
+        recruitedRekimatoi &&
+        rekimatoiNickname.trim() &&
+        rekimatoiNickname.trim() !== recruitedRekimatoi.displayName
+      ) {
+        await execute({
+          type: 'renameCreature',
+          creatureId: recruitedRekimatoi.id,
+          name: rekimatoiNickname,
+        })
+      }
+      await execute({ type: 'exploration', action: { type: 'completeGroveSurvey' } })
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : '保存に失敗しました。')
+    }
+  }
+
   const saveLabel = {
     loading: '読込中',
     saved: '保存済み',
@@ -241,6 +275,14 @@ export function ExplorationPage() {
             <p className="eyebrow">重要記録</p>
             <h1>安全な流路を保存しています</h1>
             <p>汚染戦の解決を確定してから、先遣隊第2記録と下流弁を処理します。</p>
+          </section>
+        )}
+
+        {expedition.phase === 'grove-result' && saveStatus !== 'saved' && (
+          <section className="field-event-card" aria-live="polite">
+            <p className="eyebrow">重要記録</p>
+            <h1>レキマトイの協力を保存しています</h1>
+            <p>控えへの登録を確定してから、古い殻片と中枢経路を記録します。</p>
           </section>
         )}
 
@@ -439,6 +481,85 @@ export function ExplorationPage() {
           </section>
         )}
 
+        {expedition.phase === 'grove-event' && (
+          <section className="field-event-card grove-event-card">
+            <p className="eyebrow">地点イベント・濾過樹群</p>
+            <h1>樹根を震わせる古代波動</h1>
+            <div className="field-illustration grove-illustration" aria-hidden="true">
+              <span>樹</span><span>波</span><span>礫</span>
+            </div>
+            <p>上下流から水音が戻る一方、濾過樹群だけが不規則に震えています。石殻の異獣は、波動を発する小型装置から離れようとしません。</p>
+            <blockquote>殻を壊せば早い。だが、その殻が何を防いでいるのかは分からなくなる。</blockquote>
+            <button
+              className="primary-button full-button"
+              type="button"
+              onClick={() => void runAction({ type: 'beginGroveEncounter' })}
+            >
+              防御隊形で接触する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'grove-encounter' && (
+          <FilterGrovePanel runAction={runAction} />
+        )}
+
+        {expedition.phase === 'grove-result' && saveStatus === 'saved' && (
+          <section className="field-event-card recruit-card">
+            <p className="eyebrow">協力成立・遺跡触媒</p>
+            <h1>外された殻は、選ばれた記録</h1>
+            <div className="specimen-orb recruited grove-orb" aria-hidden="true">礫</div>
+            <p>レキマトイは安定した遺跡片の隣へ古い殻片を置き、前衛の後を追いました。傷つけずに得た殻片を遺跡触媒として保全します。</p>
+            <label htmlFor="rekimatoi-nickname">記録する呼称</label>
+            <input
+              id="rekimatoi-nickname"
+              value={rekimatoiNickname}
+              maxLength={20}
+              onChange={(event) => setRekimatoiNickname(event.target.value)}
+            />
+            <button
+              className="primary-button full-button"
+              type="button"
+              disabled={!rekimatoiNickname.trim()}
+              onClick={() => void finishGroveResult()}
+            >
+              呼称と殻片を保存する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'grove-complete' && (
+          <section className="field-event-card core-unlock-card">
+            <p className="eyebrow">遺跡波動停止・中枢経路解放</p>
+            <h1>霧の奥で中央管路が発光する</h1>
+            <p>上下流弁と濾過樹群が同期し、浄化施設中枢への石路が青白く浮かび上がりました。</p>
+            <div className="progress-grid" aria-label="中枢解放条件">
+              <div><span>水路弁復旧</span><strong>{state.objective.valvesRestored} / {state.objective.valvesTotal}</strong></div>
+              <div><span>遺跡波動</span><strong>停止</strong></div>
+              <div><span>遺跡触媒</span><strong>1</strong></div>
+            </div>
+            <button className="primary-button full-button" type="button" onClick={() => void returnToLaboratory()}>
+              研究所へ帰還する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'core-preview' && (
+          <section className="field-event-card core-preview-card">
+            <p className="eyebrow">最深部・浄化施設中枢</p>
+            <h1>黒紫の生命核が管路を塞ぐ</h1>
+            <div className="field-illustration core-illustration" aria-hidden="true">
+              <span>管</span><span>核</span><span>濁</span>
+            </div>
+            <p>巨大な異獣と施設の管路が一体化し、排出できない沈殿物が生命核へ戻り続けています。</p>
+            <blockquote>本体を傷つけても、排出できない汚染が戻るだけだ。中央排出路を先に復旧する。</blockquote>
+            <p className="field-note">ニゴリグイの3段階調査戦は、次の実装範囲です。中枢直前の状態は保存されています。</p>
+            <button className="primary-button full-button" type="button" onClick={() => void returnToLaboratory()}>
+              研究所へ戻り、最終調査を準備する
+            </button>
+          </section>
+        )}
+
         {expedition.phase === 'branch-selected' && expedition.selectedBranchId && (
           <section className="field-event-card">
             <p className="eyebrow">調査経路を確定</p>
@@ -461,6 +582,10 @@ export function ExplorationPage() {
           'waterway-battle',
           'waterway-result',
           'waterway-complete',
+          'grove-encounter',
+          'grove-result',
+          'grove-complete',
+          'core-preview',
         ].includes(expedition.phase) && (
           <button className="return-button" type="button" onClick={() => void returnToLaboratory()}>
             調査を中断して研究所へ戻る

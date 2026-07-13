@@ -14,6 +14,21 @@ export function createInitialExpeditionState(): ExpeditionState {
     waterwayApproach: null,
     waterwayBattle: null,
     waterwayCompleted: false,
+    groveEncounter: null,
+    groveCompleted: false,
+    relicCatalystObtained: false,
+  }
+}
+
+export function createGroveEncounterState(): import('./types').GroveEncounterState {
+  return {
+    round: 1,
+    vigilance: 50,
+    waveObserved: false,
+    emitterStopped: false,
+    stableFragmentOffered: false,
+    shellIntact: true,
+    lastAction: 'encountered',
   }
 }
 

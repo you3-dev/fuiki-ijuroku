@@ -65,6 +65,29 @@ const waterwayCompletionUpdate: ResearchUpdate = {
   acknowledged: false,
 }
 
+const rekimatoi: CreatureSummary = {
+  id: 'creature-rekimatoi-grove-001',
+  speciesId: 'rekimatoi',
+  displayName: 'レキマトイ',
+  level: 3,
+  role: '装甲・遺跡干渉',
+  status: 'ready',
+}
+
+const groveCooperationUpdate: ResearchUpdate = {
+  id: 'update-rekimatoi-cooperated',
+  title: '石殻の協力個体を登録',
+  detail: '遺跡波動を止め、安定した遺跡片を示してレキマトイを控えへ迎えました。',
+  acknowledged: false,
+}
+
+const groveCompletionUpdate: ResearchUpdate = {
+  id: 'update-filter-grove-stabilized',
+  title: '濾過樹群の波動を停止',
+  detail: '古い殻片を遺跡触媒として保全し、浄化施設中枢への経路を解放しました。',
+  acknowledged: false,
+}
+
 export function executeGameCommand(
   state: GameSessionState,
   command: GameCommand,
@@ -174,6 +197,16 @@ export function executeGameCommand(
         if (!alreadyOwned && !state.party.reserve.includes(null)) return state
       }
 
+      if (
+        command.action.type === 'groveAction' &&
+        command.action.action === 'requestCooperation'
+      ) {
+        const alreadyOwned = [...state.party.front, ...state.party.reserve].some(
+          (creature) => creature?.id === rekimatoi.id,
+        )
+        if (!alreadyOwned && !state.party.reserve.includes(null)) return state
+      }
+
       const transition = advanceExpedition(state.expedition, command.action)
       if (transition.expedition === state.expedition) return state
 
@@ -216,6 +249,24 @@ export function executeGameCommand(
           researchUpdates = [...researchUpdates, towerCooperationUpdate]
         }
       }
+      if (transition.recruitedRekimatoi) {
+        const alreadyOwned = [...party.front, ...party.reserve].some(
+          (creature) => creature?.id === rekimatoi.id,
+        )
+        if (!alreadyOwned) {
+          const emptyReserveIndex = party.reserve.findIndex(
+            (creature) => creature === null,
+          )
+          if (emptyReserveIndex >= 0) {
+            const reserve = [...party.reserve]
+            reserve[emptyReserveIndex] = rekimatoi
+            party = { ...party, reserve }
+          }
+        }
+        if (!researchUpdates.some((update) => update.id === groveCooperationUpdate.id)) {
+          researchUpdates = [...researchUpdates, groveCooperationUpdate]
+        }
+      }
 
       let objective = state.objective
       if (transition.completedTower) {
@@ -242,6 +293,11 @@ export function executeGameCommand(
         }
         if (!researchUpdates.some((update) => update.id === waterwayCompletionUpdate.id)) {
           researchUpdates = [...researchUpdates, waterwayCompletionUpdate]
+        }
+      }
+      if (transition.completedGrove) {
+        if (!researchUpdates.some((update) => update.id === groveCompletionUpdate.id)) {
+          researchUpdates = [...researchUpdates, groveCompletionUpdate]
         }
       }
 

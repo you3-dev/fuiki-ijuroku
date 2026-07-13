@@ -32,4 +32,16 @@ export const graymossNodes: Record<RegionNodeId, RegionNode> = {
     code: 'GM-03B',
     summary: '黒い沈殿物の下で、下流側の水路が止まっている。',
   },
+  'filter-grove': {
+    id: 'filter-grove',
+    name: '濾過樹群',
+    code: 'GM-04',
+    summary: '遺跡波動に震える樹根の間で、石殻の異獣が小型装置を守っている。',
+  },
+  'purification-core': {
+    id: 'purification-core',
+    name: '浄化施設中枢',
+    code: 'GM-05',
+    summary: '復旧した水路の先で、黒紫の生命核と古代管路が脈動している。',
+  },
 }

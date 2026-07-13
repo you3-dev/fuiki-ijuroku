@@ -133,7 +133,7 @@ describe('executeGameCommand', () => {
     ).toBe(fullFront)
   })
 
-  it('completes the observation tower, recruits Kirihane once, and records progress', () => {
+  it('completes both branches and the filter grove with one-time rewards', () => {
     let state = executeGameCommand(createInitialGameState(), {
       type: 'recordPreparation',
     })
@@ -279,5 +279,46 @@ describe('executeGameCommand', () => {
         (update) => update.id === 'update-downstream-valve-restored',
       ),
     ).toHaveLength(1)
+
+    for (const action of [
+      { type: 'returnToLaboratory' } as const,
+      { type: 'startExpedition' } as const,
+      { type: 'beginGroveEncounter' } as const,
+      { type: 'groveAction', action: 'observeWave' } as const,
+      { type: 'groveAction', action: 'stopEmitter' } as const,
+      { type: 'groveAction', action: 'offerStableFragment' } as const,
+      { type: 'groveAction', action: 'requestCooperation' } as const,
+    ]) {
+      state = executeGameCommand(state, { type: 'exploration', action })
+    }
+    expect(state.expedition.phase).toBe('grove-result')
+    expect(state.party.reserve[1]).toMatchObject({
+      id: 'creature-rekimatoi-grove-001',
+      speciesId: 'rekimatoi',
+    })
+
+    state = executeGameCommand(state, {
+      type: 'exploration', action: { type: 'completeGroveSurvey' },
+    })
+    expect(state.expedition).toMatchObject({
+      phase: 'grove-complete',
+      groveCompleted: true,
+      relicCatalystObtained: true,
+    })
+    expect(state.objective.recordsFound).toBe(2)
+    expect(state.objective.valvesRestored).toBe(2)
+    expect(
+      state.researchUpdates.filter(
+        (update) => update.id === 'update-filter-grove-stabilized',
+      ),
+    ).toHaveLength(1)
+
+    state = executeGameCommand(state, {
+      type: 'exploration', action: { type: 'returnToLaboratory' },
+    })
+    state = executeGameCommand(state, {
+      type: 'exploration', action: { type: 'startExpedition' },
+    })
+    expect(state.expedition.phase).toBe('core-preview')
   })
 })

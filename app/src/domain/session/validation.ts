@@ -45,6 +45,8 @@ const REGION_NODE_IDS: RegionNodeId[] = [
   'graymoss-shallows',
   'observation-tower',
   'sunken-waterway',
+  'filter-grove',
+  'purification-core',
 ]
 
 const EXPEDITION_PHASES: ExpeditionPhase[] = [
@@ -63,6 +65,11 @@ const EXPEDITION_PHASES: ExpeditionPhase[] = [
   'waterway-battle',
   'waterway-result',
   'waterway-complete',
+  'grove-event',
+  'grove-encounter',
+  'grove-result',
+  'grove-complete',
+  'core-preview',
 ]
 
 function isRegionNodeId(value: unknown): value is RegionNodeId {
@@ -234,6 +241,31 @@ function isWaterwayBattle(value: unknown): boolean {
   return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
 }
 
+function isGroveEncounter(value: unknown): boolean {
+  if (!isRecord(value)) return false
+  if (!Number.isInteger(value.round) || Number(value.round) < 1 || Number(value.round) > 4) {
+    return false
+  }
+  if (!isNonNegativeInteger(value.vigilance) || Number(value.vigilance) > 50) {
+    return false
+  }
+  if (typeof value.waveObserved !== 'boolean') return false
+  if (typeof value.emitterStopped !== 'boolean') return false
+  if (typeof value.stableFragmentOffered !== 'boolean') return false
+  if (typeof value.shellIntact !== 'boolean') return false
+  if (
+    !['encountered', 'wave-observed', 'emitter-stopped', 'fragment-offered', 'shell-damaged']
+      .includes(String(value.lastAction))
+  ) {
+    return false
+  }
+  if (value.emitterStopped && !value.waveObserved) return false
+  if (value.stableFragmentOffered && !value.emitterStopped) return false
+  if (value.stableFragmentOffered && Number(value.vigilance) > 20) return false
+  if (!value.shellIntact && value.lastAction !== 'shell-damaged') return false
+  return true
+}
+
 function isExpeditionState(value: unknown): boolean {
   if (!isRecord(value)) return false
   if (!EXPEDITION_PHASES.includes(value.phase as ExpeditionPhase)) return false
@@ -245,6 +277,15 @@ function isExpeditionState(value: unknown): boolean {
   if (typeof value.firstRecruitmentCompleted !== 'boolean') return false
   if (typeof value.towerCompleted !== 'boolean') return false
   if (typeof value.waterwayCompleted !== 'boolean') return false
+  if (typeof value.groveCompleted !== 'boolean') return false
+  if (typeof value.relicCatalystObtained !== 'boolean') return false
+  if (value.groveEncounter !== null && !isGroveEncounter(value.groveEncounter)) {
+    return false
+  }
+  if (value.relicCatalystObtained !== value.groveCompleted) return false
+  if (value.groveCompleted && (!value.towerCompleted || !value.waterwayCompleted)) {
+    return false
+  }
   if (
     value.waterwayApproach !== null &&
     !WATERWAY_APPROACHES.includes(value.waterwayApproach as WaterwayApproach)
@@ -256,6 +297,10 @@ function isExpeditionState(value: unknown): boolean {
     value.selectedBranchId !== 'observation-tower' &&
     value.selectedBranchId !== 'sunken-waterway'
   ) {
+    return false
+  }
+  const activeGrovePhases: ExpeditionPhase[] = ['grove-encounter', 'grove-result']
+  if (!activeGrovePhases.includes(value.phase as ExpeditionPhase) && value.groveEncounter !== null) {
     return false
   }
   switch (value.phase) {
@@ -410,6 +455,78 @@ function isExpeditionState(value: unknown): boolean {
         value.towerBattle === null &&
         value.waterwayBattle === null
       )
+    case 'grove-event':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.towerCompleted === true &&
+        value.waterwayCompleted === true &&
+        value.groveCompleted === false &&
+        value.currentNodeId === 'filter-grove' &&
+        value.unlockedNodeIds.includes('filter-grove') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        value.groveEncounter === null
+      )
+    case 'grove-encounter':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.towerCompleted === true &&
+        value.waterwayCompleted === true &&
+        value.groveCompleted === false &&
+        value.currentNodeId === 'filter-grove' &&
+        value.unlockedNodeIds.includes('filter-grove') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        isGroveEncounter(value.groveEncounter)
+      )
+    case 'grove-result':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.towerCompleted === true &&
+        value.waterwayCompleted === true &&
+        value.groveCompleted === false &&
+        value.currentNodeId === 'filter-grove' &&
+        value.unlockedNodeIds.includes('filter-grove') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        isGroveEncounter(value.groveEncounter) &&
+        (value.groveEncounter as Record<string, unknown>).waveObserved === true &&
+        (value.groveEncounter as Record<string, unknown>).emitterStopped === true &&
+        (value.groveEncounter as Record<string, unknown>).stableFragmentOffered === true &&
+        (value.groveEncounter as Record<string, unknown>).shellIntact === true &&
+        Number((value.groveEncounter as Record<string, unknown>).vigilance) <= 20
+      )
+    case 'grove-complete':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.towerCompleted === true &&
+        value.waterwayCompleted === true &&
+        value.groveCompleted === true &&
+        value.relicCatalystObtained === true &&
+        value.currentNodeId === 'filter-grove' &&
+        value.unlockedNodeIds.includes('purification-core') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        value.groveEncounter === null
+      )
+    case 'core-preview':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.towerCompleted === true &&
+        value.waterwayCompleted === true &&
+        value.groveCompleted === true &&
+        value.relicCatalystObtained === true &&
+        value.currentNodeId === 'purification-core' &&
+        value.unlockedNodeIds.includes('purification-core') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        value.groveEncounter === null
+      )
     default:
       return false
   }
@@ -478,6 +595,12 @@ export function isGameSessionState(value: unknown): value is GameSessionState {
   const expectsTowerKirihane =
     expeditionRecord.phase === 'tower-result' || expeditionRecord.towerCompleted === true
   if (hasTowerKirihane !== expectsTowerKirihane) return false
+  const hasGroveRekimatoi = partySlots.some(
+    (creature) => isRecord(creature) && creature.id === 'creature-rekimatoi-grove-001',
+  )
+  const expectsGroveRekimatoi =
+    expeditionRecord.phase === 'grove-result' || expeditionRecord.groveCompleted === true
+  if (hasGroveRekimatoi !== expectsGroveRekimatoi) return false
   const completedRoutes =
     Number(expeditionRecord.towerCompleted === true) +
     Number(expeditionRecord.waterwayCompleted === true)

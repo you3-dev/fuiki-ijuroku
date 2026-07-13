@@ -9,6 +9,10 @@ export function BestiaryPage() {
     state.expedition.towerCompleted ||
     state.expedition.phase === 'tower-result' ||
     Boolean(state.expedition.towerBattle?.callObserved)
+  const rekimatoiObserved =
+    state.expedition.groveCompleted ||
+    state.expedition.phase === 'grove-result' ||
+    Boolean(state.expedition.groveEncounter?.waveObserved)
   const entries = [
     { id: 'tomoshigoke', name: 'トモシゴケ', stage: '初期同行', mark: '灯' },
     { id: 'numakuguri', name: 'ヌマクグリ', stage: '初期同行', mark: '沼' },
@@ -18,6 +22,10 @@ export function BestiaryPage() {
     kirihaneObserved
       ? { id: 'kirihane', name: 'キリハネ', stage: state.expedition.towerCompleted ? '協力済み' : '観察済み', mark: '霧' }
       : { id: 'unknown-tower', name: '未同定', stage: '霧中記録なし', mark: '?' },
+    rekimatoiObserved
+      ? { id: 'rekimatoi', name: 'レキマトイ', stage: state.expedition.groveCompleted ? '協力済み' : '観察済み', mark: '礫' }
+      : { id: 'unknown-grove', name: '未同定', stage: '樹群記録なし', mark: '?' },
+    { id: 'unknown-core', name: '未同定', stage: state.expedition.groveCompleted ? '大型反応を確認' : '中枢未到達', mark: '?' },
   ]
   return (
     <div className="page-stack">
@@ -31,7 +39,7 @@ export function BestiaryPage() {
         <div className="card-heading-row">
           <div>
             <p className="card-kicker">灰苔湿原</p>
-            <h3>調査済み {2 + Number(sumiwatariObserved) + Number(kirihaneObserved)} / 6</h3>
+            <h3>調査済み {2 + Number(sumiwatariObserved) + Number(kirihaneObserved) + Number(rekimatoiObserved)} / 6</h3>
           </div>
           <span className="specimen-tag">FIELD-01</span>
         </div>

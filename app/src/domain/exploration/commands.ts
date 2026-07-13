@@ -1,4 +1,7 @@
-import { createTutorialBattleState } from './createInitialExpedition'
+import {
+  createGroveEncounterState,
+  createTutorialBattleState,
+} from './createInitialExpedition'
 import { createTowerBattleState, updateTowerBattle } from '../battle/towerBattle'
 import { createWaterwayBattleState, updateWaterwayBattle } from '../battle/waterwayBattle'
 import type {
@@ -29,6 +32,18 @@ export function canRequestCooperation(battle: TutorialBattleState): boolean {
   )
 }
 
+export function canRequestGroveCooperation(
+  encounter: ExpeditionState['groveEncounter'],
+): boolean {
+  return Boolean(
+    encounter?.waveObserved &&
+    encounter.emitterStopped &&
+    encounter.stableFragmentOffered &&
+    encounter.shellIntact &&
+    encounter.vigilance <= 20,
+  )
+}
+
 export function advanceExpedition(
   expedition: ExpeditionState,
   action: ExplorationAction,
@@ -37,6 +52,31 @@ export function advanceExpedition(
     case 'startExpedition': {
       if (expedition.phase !== 'idle') return unchanged(expedition)
       if (expedition.firstRecruitmentCompleted) {
+        if (expedition.towerCompleted && expedition.waterwayCompleted) {
+          if (expedition.groveCompleted) {
+            return {
+              expedition: {
+                ...expedition,
+                phase: 'core-preview',
+                currentNodeId: 'purification-core',
+                selectedBranchId: null,
+                unlockedNodeIds: unlock(expedition, ['purification-core']),
+              },
+              recruitedSumiwatari: false,
+            }
+          }
+          return {
+            expedition: {
+              ...expedition,
+              phase: 'grove-event',
+              currentNodeId: 'filter-grove',
+              selectedBranchId: null,
+              unlockedNodeIds: unlock(expedition, ['filter-grove']),
+              groveEncounter: null,
+            },
+            recruitedSumiwatari: false,
+          }
+        }
         return {
           expedition: {
             ...expedition,
@@ -327,6 +367,135 @@ export function advanceExpedition(
         completedWaterway: true,
       }
     }
+    case 'beginGroveEncounter': {
+      if (
+        expedition.phase !== 'grove-event' ||
+        expedition.currentNodeId !== 'filter-grove' ||
+        !expedition.towerCompleted ||
+        !expedition.waterwayCompleted ||
+        expedition.groveCompleted
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'grove-encounter',
+          groveEncounter: createGroveEncounterState(),
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'groveAction': {
+      const encounter = expedition.groveEncounter
+      if (expedition.phase !== 'grove-encounter' || !encounter) {
+        return unchanged(expedition)
+      }
+      if (!encounter.shellIntact && action.action !== 'requestCooperation') {
+        return unchanged(expedition)
+      }
+      switch (action.action) {
+        case 'observeWave':
+          if (encounter.waveObserved) return unchanged(expedition)
+          return {
+            expedition: {
+              ...expedition,
+              groveEncounter: {
+                ...encounter,
+                round: 2,
+                waveObserved: true,
+                lastAction: 'wave-observed',
+              },
+            },
+            recruitedSumiwatari: false,
+          }
+        case 'stopEmitter':
+          if (!encounter.waveObserved || encounter.emitterStopped) {
+            return unchanged(expedition)
+          }
+          return {
+            expedition: {
+              ...expedition,
+              groveEncounter: {
+                ...encounter,
+                round: 3,
+                vigilance: 30,
+                emitterStopped: true,
+                lastAction: 'emitter-stopped',
+              },
+            },
+            recruitedSumiwatari: false,
+          }
+        case 'offerStableFragment':
+          if (!encounter.emitterStopped || encounter.stableFragmentOffered) {
+            return unchanged(expedition)
+          }
+          return {
+            expedition: {
+              ...expedition,
+              groveEncounter: {
+                ...encounter,
+                round: 4,
+                vigilance: 20,
+                stableFragmentOffered: true,
+                lastAction: 'fragment-offered',
+              },
+            },
+            recruitedSumiwatari: false,
+          }
+        case 'damageShell':
+          if (!encounter.shellIntact) return unchanged(expedition)
+          return {
+            expedition: {
+              ...expedition,
+              groveEncounter: {
+                ...encounter,
+                shellIntact: false,
+                lastAction: 'shell-damaged',
+              },
+            },
+            recruitedSumiwatari: false,
+          }
+        case 'requestCooperation':
+          if (!canRequestGroveCooperation(encounter)) return unchanged(expedition)
+          return {
+            expedition: { ...expedition, phase: 'grove-result' },
+            recruitedSumiwatari: false,
+            recruitedRekimatoi: true,
+          }
+      }
+    }
+    case 'retryGroveEncounter': {
+      if (
+        expedition.phase !== 'grove-encounter' ||
+        !expedition.groveEncounter ||
+        expedition.groveEncounter.shellIntact
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          groveEncounter: createGroveEncounterState(),
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'completeGroveSurvey': {
+      if (expedition.phase !== 'grove-result') return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'grove-complete',
+          groveEncounter: null,
+          groveCompleted: true,
+          relicCatalystObtained: true,
+          unlockedNodeIds: unlock(expedition, ['purification-core']),
+        },
+        recruitedSumiwatari: false,
+        completedGrove: true,
+      }
+    }
     case 'returnToLaboratory': {
       if (
         expedition.phase === 'battle' ||
@@ -334,6 +503,8 @@ export function advanceExpedition(
         expedition.phase === 'tower-result' ||
         expedition.phase === 'waterway-battle' ||
         expedition.phase === 'waterway-result' ||
+        expedition.phase === 'grove-encounter' ||
+        expedition.phase === 'grove-result' ||
         expedition.phase === 'idle'
       ) {
         return unchanged(expedition)
@@ -346,6 +517,7 @@ export function advanceExpedition(
           battle: null,
           towerBattle: null,
           waterwayBattle: null,
+          groveEncounter: null,
         },
         recruitedSumiwatari: false,
       }

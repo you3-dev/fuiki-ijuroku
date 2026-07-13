@@ -23,6 +23,15 @@ function addWaterwayState(expedition: Record<string, unknown>) {
   }
 }
 
+function addGroveState(expedition: Record<string, unknown>) {
+  return {
+    ...expedition,
+    groveEncounter: null,
+    groveCompleted: false,
+    relicCatalystObtained: false,
+  }
+}
+
 export function migrateGameSessionState(value: unknown): GameSessionState | null {
   if (isGameSessionState(value)) return value
   if (!isRecord(value)) return null
@@ -40,7 +49,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addWaterwayState({
+      expedition: addGroveState(addWaterwayState({
         ...value.expedition,
         phase:
           value.expedition.phase === 'branch-selected' &&
@@ -49,7 +58,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
             : value.expedition.phase,
         towerBattle: null,
         towerCompleted: false,
-      }),
+      })),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -58,7 +67,16 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addWaterwayState(value.expedition),
+      expedition: addGroveState(addWaterwayState(value.expedition)),
+    }
+    return isGameSessionState(migrated) ? migrated : null
+  }
+
+  if (value.schemaVersion === 4 && isRecord(value.expedition)) {
+    const migrated: unknown = {
+      ...value,
+      schemaVersion: GAME_SCHEMA_VERSION,
+      expedition: addGroveState(value.expedition),
     }
     return isGameSessionState(migrated) ? migrated : null
   }

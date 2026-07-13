@@ -1083,6 +1083,41 @@ p {
   color: #c8d9d0;
 }
 
+.grove-encounter .encounter-heading {
+  background:
+    radial-gradient(circle at 82% 42%, rgb(156 196 176 / 25%), transparent 7rem),
+    linear-gradient(135deg, #46544b, #272f31 68%, #171f21);
+}
+
+.specimen-orb.grove-orb {
+  border-color: #a8c7af;
+  background: #5a6559;
+  box-shadow: 0 0 2rem rgb(159 201 176 / 28%);
+}
+
+.battle-actions .risky-field-action {
+  border-color: rgb(149 88 75 / 55%);
+  color: #704239;
+  background: rgb(238 222 207 / 72%);
+}
+
+.grove-illustration {
+  background:
+    radial-gradient(circle at 74% 30%, rgb(147 202 170 / 22%), transparent 5rem),
+    linear-gradient(180deg, rgb(87 113 92 / 55%), rgb(34 43 40 / 92%));
+}
+
+.core-illustration {
+  background:
+    radial-gradient(circle at 50% 52%, rgb(136 91 145 / 42%), transparent 4.8rem),
+    repeating-linear-gradient(90deg, #222d30 0 2.3rem, #2e393b 2.4rem 2.7rem);
+}
+
+.core-unlock-card {
+  border-color: rgb(112 192 180 / 62%);
+  box-shadow: 0 0 2rem rgb(112 192 180 / 15%), 0 14px 34px rgb(0 0 0 / 24%);
+}
+
 .standard-battle {
   overflow: hidden;
   border: 1px solid rgb(216 208 185 / 55%);
