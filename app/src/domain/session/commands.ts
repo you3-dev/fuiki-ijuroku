@@ -58,6 +58,13 @@ const towerCompletionUpdate: ResearchUpdate = {
   acknowledged: false,
 }
 
+const waterwayCompletionUpdate: ResearchUpdate = {
+  id: 'update-downstream-valve-restored',
+  title: '下流弁を復旧',
+  detail: '先遣隊の第2記録を回収し、澄み流しで弁内部の沈殿物を除去しました。',
+  acknowledged: false,
+}
+
 export function executeGameCommand(
   state: GameSessionState,
   command: GameCommand,
@@ -222,6 +229,19 @@ export function executeGameCommand(
         }
         if (!researchUpdates.some((update) => update.id === towerCompletionUpdate.id)) {
           researchUpdates = [...researchUpdates, towerCompletionUpdate]
+        }
+      }
+      if (transition.completedWaterway) {
+        objective = {
+          ...objective,
+          recordsFound: Math.min(objective.recordsTotal, objective.recordsFound + 1),
+          valvesRestored: Math.min(
+            objective.valvesTotal,
+            objective.valvesRestored + 1,
+          ),
+        }
+        if (!researchUpdates.some((update) => update.id === waterwayCompletionUpdate.id)) {
+          researchUpdates = [...researchUpdates, waterwayCompletionUpdate]
         }
       }
 

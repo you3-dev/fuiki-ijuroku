@@ -208,5 +208,76 @@ describe('executeGameCommand', () => {
         (update) => update.id === 'update-upstream-valve-restored',
       ),
     ).toHaveLength(1)
+
+    const waterwayActions = [
+      { type: 'returnToLaboratory' } as const,
+      { type: 'startExpedition' } as const,
+      { type: 'enterNode', nodeId: 'sunken-waterway' } as const,
+      { type: 'selectWaterwayApproach', approach: 'observe-intake' } as const,
+    ]
+    for (const action of waterwayActions) {
+      state = executeGameCommand(state, { type: 'exploration', action })
+    }
+    const waterwayCommands = [
+      {
+        type: 'setPlan', actorId: 'tomoshigoke',
+        plan: { kind: 'skill', skillId: 'calming-glimmer', targetId: 'polluted-sumiwatari' },
+      } as const,
+      {
+        type: 'setPlan', actorId: 'numakuguri',
+        plan: { kind: 'skill', skillId: 'burrow-guard', targetId: 'tomoshigoke' },
+      } as const,
+      {
+        type: 'setPlan', actorId: 'sumiwatari',
+        plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'pollution-mass' },
+      } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+      {
+        type: 'setPlan', actorId: 'tomoshigoke',
+        plan: { kind: 'defend', targetId: 'tomoshigoke' },
+      } as const,
+      {
+        type: 'setPlan', actorId: 'numakuguri',
+        plan: { kind: 'defend', targetId: 'numakuguri' },
+      } as const,
+      {
+        type: 'setPlan', actorId: 'sumiwatari',
+        plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'polluted-sumiwatari' },
+      } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+      {
+        type: 'setPlan', actorId: 'sumiwatari',
+        plan: { kind: 'defend', targetId: 'sumiwatari' },
+      } as const,
+      { type: 'setSupport', support: 'indicate-safe-route' } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+    ]
+    for (const command of waterwayCommands) {
+      state = executeGameCommand(state, {
+        type: 'exploration',
+        action: { type: 'waterwayBattleCommand', command },
+      })
+    }
+    expect(state.expedition.phase).toBe('waterway-result')
+    state = executeGameCommand(state, {
+      type: 'exploration', action: { type: 'flushWaterwayValve' },
+    })
+    expect(state.expedition).toMatchObject({
+      phase: 'waterway-complete',
+      towerCompleted: true,
+      waterwayCompleted: true,
+    })
+    expect(state.objective.recordsFound).toBe(2)
+    expect(state.objective.valvesRestored).toBe(2)
+    expect(
+      state.researchUpdates.filter(
+        (update) => update.id === 'update-downstream-valve-restored',
+      ),
+    ).toHaveLength(1)
   })
 })

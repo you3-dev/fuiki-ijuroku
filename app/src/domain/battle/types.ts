@@ -50,3 +50,53 @@ export type BattleCommand =
   | { type: 'setPlan'; actorId: AllyCombatantId; plan: PlannedAction }
   | { type: 'commitRound' }
   | { type: 'resolveRound' }
+
+export type WaterwayTargetId = 'pollution-mass' | 'polluted-sumiwatari'
+export type WaterwayPlanTargetId = AllyCombatantId | WaterwayTargetId
+export type WaterwayApproach = 'observe-intake' | 'hurry-to-valve'
+
+export type WaterwayPlannedAction =
+  | { kind: 'basic'; targetId: WaterwayTargetId }
+  | { kind: 'defend'; targetId: AllyCombatantId }
+  | { kind: 'skill'; skillId: BattleSkillId; targetId: WaterwayPlanTargetId }
+
+export type WaterwaySupport = 'none' | 'indicate-safe-route'
+
+export type WaterwayTargetState = {
+  id: WaterwayTargetId
+  currentHp: number
+  pollution: number
+}
+
+export type WaterwayBattleOutcome =
+  | 'ongoing'
+  | 'secured'
+  | 'ecosystem-damaged'
+  | 'party-defeated'
+
+export type WaterwayBattleState = {
+  kind: 'sunken-waterway'
+  phase: 'planning' | 'committed'
+  round: number
+  randomSeed: number
+  approach: WaterwayApproach
+  allies: Record<AllyCombatantId, CombatantState & { pollution: number }>
+  targets: Record<WaterwayTargetId, WaterwayTargetState>
+  plans: Record<AllyCombatantId, WaterwayPlannedAction>
+  supportPlan: WaterwaySupport
+  vigilance: number
+  calmed: boolean
+  observedSource: boolean
+  outcome: WaterwayBattleOutcome
+  lastLog: string[]
+}
+
+export type WaterwayBattleCommand =
+  | { type: 'setSupport'; support: WaterwaySupport }
+  | {
+      type: 'setPlan'
+      actorId: AllyCombatantId
+      plan: WaterwayPlannedAction
+    }
+  | { type: 'commitRound' }
+  | { type: 'resolveRound' }

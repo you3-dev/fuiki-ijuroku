@@ -11,6 +11,9 @@ export function createInitialExpeditionState(): ExpeditionState {
     battle: null,
     towerBattle: null,
     towerCompleted: false,
+    waterwayApproach: null,
+    waterwayBattle: null,
+    waterwayCompleted: false,
   }
 }
 

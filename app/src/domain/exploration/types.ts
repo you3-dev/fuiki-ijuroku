@@ -16,6 +16,10 @@ export type ExpeditionPhase =
   | 'tower-battle'
   | 'tower-result'
   | 'tower-complete'
+  | 'waterway-event'
+  | 'waterway-battle'
+  | 'waterway-result'
+  | 'waterway-complete'
 
 export type TutorialBattleState = {
   round: number
@@ -43,6 +47,9 @@ export type ExpeditionState = {
   battle: TutorialBattleState | null
   towerBattle: TowerBattleState | null
   towerCompleted: boolean
+  waterwayApproach: WaterwayApproach | null
+  waterwayBattle: WaterwayBattleState | null
+  waterwayCompleted: boolean
 }
 
 export type ExplorationAction =
@@ -58,6 +65,10 @@ export type ExplorationAction =
   | { type: 'towerBattleCommand'; command: BattleCommand }
   | { type: 'retryTowerEncounter' }
   | { type: 'alignTowerReflector' }
+  | { type: 'selectWaterwayApproach'; approach: WaterwayApproach }
+  | { type: 'waterwayBattleCommand'; command: WaterwayBattleCommand }
+  | { type: 'retryWaterwayEncounter' }
+  | { type: 'flushWaterwayValve' }
   | { type: 'returnToLaboratory' }
 
 export type ExplorationTransition = {
@@ -65,5 +76,12 @@ export type ExplorationTransition = {
   recruitedSumiwatari: boolean
   recruitedKirihane?: boolean
   completedTower?: boolean
+  completedWaterway?: boolean
 }
-import type { BattleCommand, TowerBattleState } from '../battle/types'
+import type {
+  BattleCommand,
+  TowerBattleState,
+  WaterwayApproach,
+  WaterwayBattleCommand,
+  WaterwayBattleState,
+} from '../battle/types'

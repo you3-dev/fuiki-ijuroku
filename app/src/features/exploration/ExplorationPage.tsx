@@ -5,6 +5,7 @@ import { canRequestCooperation } from '../../domain/exploration/commands'
 import { graymossNodes } from '../../domain/exploration/data'
 import type { ExplorationAction } from '../../domain/exploration/types'
 import { TowerBattlePanel } from './TowerBattlePanel'
+import { WaterwayBattlePanel } from './WaterwayBattlePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
 const KIRIHANE_ID = 'creature-kirihane-tower-001'
@@ -235,6 +236,14 @@ export function ExplorationPage() {
           </section>
         )}
 
+        {expedition.phase === 'waterway-result' && saveStatus !== 'saved' && (
+          <section className="field-event-card" aria-live="polite">
+            <p className="eyebrow">重要記録</p>
+            <h1>安全な流路を保存しています</h1>
+            <p>汚染戦の解決を確定してから、先遣隊第2記録と下流弁を処理します。</p>
+          </section>
+        )}
+
         {expedition.phase === 'entrance' && (
           <section className="field-event-card">
             <p className="eyebrow">地点イベント</p>
@@ -282,6 +291,47 @@ export function ExplorationPage() {
 
         {expedition.phase === 'tower-battle' && (
           <TowerBattlePanel runAction={runAction} />
+        )}
+
+        {expedition.phase === 'waterway-event' && (
+          <section className="field-event-card waterway-arrival-card">
+            <p className="eyebrow">沈み水路・短い分岐調査</p>
+            <h1>沈殿の下に二つの生命核</h1>
+            <div className="field-illustration waterway-illustration" aria-hidden="true">
+              <span>取</span><span>濁</span><span>弁</span>
+            </div>
+            <p>水没した取水桝の先で、汚染された野生スミワタリと、黒い沈殿を広げる環境塊が重なっています。</p>
+            <div className="branch-grid">
+              <button
+                className="node-button recommended-route"
+                type="button"
+                onClick={() => void runAction({
+                  type: 'selectWaterwayApproach',
+                  approach: 'observe-intake',
+                })}
+              >
+                <span className="specimen-tag">推奨・慎重</span>
+                <strong>取水桝の濁りを観察する</strong>
+                <small>警戒度40。汚染源を特定し、最初の澄み流しを強化します。</small>
+              </button>
+              <button
+                className="node-button"
+                type="button"
+                onClick={() => void runAction({
+                  type: 'selectWaterwayApproach',
+                  approach: 'hurry-to-valve',
+                })}
+              >
+                <span className="specimen-tag">強行</span>
+                <strong>下流弁へ急ぐ</strong>
+                <small>警戒度60。前衛に汚染が付着し、浄化に時間がかかります。</small>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {expedition.phase === 'waterway-battle' && (
+          <WaterwayBattlePanel runAction={runAction} />
         )}
 
         {expedition.phase === 'recruit-result' && saveStatus === 'saved' && (
@@ -347,9 +397,41 @@ export function ExplorationPage() {
             <p className="eyebrow">上流弁復旧</p>
             <h1>遠隔操作信号を確認</h1>
             <p>霧が薄くなる周期に反射板を合わせ、古代制御塔へ信号を送りました。湿原上流から、止まっていた水音が戻ります。</p>
-            <div className="progress-grid" aria-label="今回の調査成果">
-              <div><span>先遣隊記録</span><strong>1 / 3</strong></div>
-              <div><span>水路弁復旧</span><strong>1 / 2</strong></div>
+            <div className="progress-grid" aria-label="現在の調査成果">
+              <div><span>先遣隊記録</span><strong>{state.objective.recordsFound} / {state.objective.recordsTotal}</strong></div>
+              <div><span>水路弁復旧</span><strong>{state.objective.valvesRestored} / {state.objective.valvesTotal}</strong></div>
+            </div>
+            <button className="primary-button full-button" type="button" onClick={() => void returnToLaboratory()}>
+              研究所へ帰還する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'waterway-result' && saveStatus === 'saved' && (
+          <section className="field-event-card">
+            <p className="eyebrow">安全確保・先遣隊第2記録</p>
+            <h1>停止ではなく、外部からの命令</h1>
+            <div className="specimen-orb recruited" aria-hidden="true">録</div>
+            <p>弁室の刻印には、施設の自然故障ではなく、外部から古代制御命令が送られた形跡が残っていました。</p>
+            <blockquote>研究所の通常回線へ送るな。記録は封印し、次の合流地点まで保持せよ。</blockquote>
+            <button
+              className="primary-button full-button"
+              type="button"
+              onClick={() => void runAction({ type: 'flushWaterwayValve' })}
+            >
+              澄み流しで弁内部を洗浄する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'waterway-complete' && (
+          <section className="field-event-card">
+            <p className="eyebrow">下流弁復旧</p>
+            <h1>沈殿の下から水音が戻る</h1>
+            <p>スミワタリの濾過流が弁内部を巡り、黒い沈殿物を排出しました。下流側の水路に青緑の色が戻ります。</p>
+            <div className="progress-grid" aria-label="現在の調査成果">
+              <div><span>先遣隊記録</span><strong>{state.objective.recordsFound} / {state.objective.recordsTotal}</strong></div>
+              <div><span>水路弁復旧</span><strong>{state.objective.valvesRestored} / {state.objective.valvesTotal}</strong></div>
             </div>
             <button className="primary-button full-button" type="button" onClick={() => void returnToLaboratory()}>
               研究所へ帰還する
@@ -376,6 +458,9 @@ export function ExplorationPage() {
           'tower-battle',
           'tower-result',
           'tower-complete',
+          'waterway-battle',
+          'waterway-result',
+          'waterway-complete',
         ].includes(expedition.phase) && (
           <button className="return-button" type="button" onClick={() => void returnToLaboratory()}>
             調査を中断して研究所へ戻る

@@ -6,6 +6,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function migrateLegacyBranchPhase(expedition: Record<string, unknown>): unknown {
+  if (expedition.phase !== 'branch-selected') return expedition.phase
+  if (expedition.currentNodeId === 'observation-tower') return 'tower-event'
+  if (expedition.currentNodeId === 'sunken-waterway') return 'waterway-event'
+  return expedition.phase
+}
+
+function addWaterwayState(expedition: Record<string, unknown>) {
+  return {
+    ...expedition,
+    phase: migrateLegacyBranchPhase(expedition),
+    waterwayApproach: null,
+    waterwayBattle: null,
+    waterwayCompleted: false,
+  }
+}
+
 export function migrateGameSessionState(value: unknown): GameSessionState | null {
   if (isGameSessionState(value)) return value
   if (!isRecord(value)) return null
@@ -23,7 +40,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: {
+      expedition: addWaterwayState({
         ...value.expedition,
         phase:
           value.expedition.phase === 'branch-selected' &&
@@ -32,7 +49,16 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
             : value.expedition.phase,
         towerBattle: null,
         towerCompleted: false,
-      },
+      }),
+    }
+    return isGameSessionState(migrated) ? migrated : null
+  }
+
+  if (value.schemaVersion === 3 && isRecord(value.expedition)) {
+    const migrated: unknown = {
+      ...value,
+      schemaVersion: GAME_SCHEMA_VERSION,
+      expedition: addWaterwayState(value.expedition),
     }
     return isGameSessionState(migrated) ? migrated : null
   }

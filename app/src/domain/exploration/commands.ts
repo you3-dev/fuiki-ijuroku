@@ -1,5 +1,6 @@
 import { createTutorialBattleState } from './createInitialExpedition'
 import { createTowerBattleState, updateTowerBattle } from '../battle/towerBattle'
+import { createWaterwayBattleState, updateWaterwayBattle } from '../battle/waterwayBattle'
 import type {
   ExpeditionState,
   ExplorationAction,
@@ -92,13 +93,15 @@ export function advanceExpedition(
           expedition: {
             ...expedition,
             phase: isTower
-              ? expedition.towerCompleted
-                ? 'tower-complete'
-                : 'tower-event'
-              : 'branch-selected',
+              ? expedition.towerCompleted ? 'tower-complete' : 'tower-event'
+              : expedition.waterwayCompleted ? 'waterway-complete' : 'waterway-event',
             currentNodeId: action.nodeId,
             selectedBranchId: action.nodeId,
             towerBattle: null,
+            waterwayApproach: isTower || expedition.waterwayCompleted
+              ? expedition.waterwayApproach
+              : null,
+            waterwayBattle: null,
           },
           recruitedSumiwatari: false,
         }
@@ -255,11 +258,82 @@ export function advanceExpedition(
         completedTower: true,
       }
     }
+    case 'selectWaterwayApproach': {
+      if (
+        expedition.phase !== 'waterway-event' ||
+        expedition.currentNodeId !== 'sunken-waterway'
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'waterway-battle',
+          waterwayApproach: action.approach,
+          waterwayBattle: createWaterwayBattleState(action.approach),
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'waterwayBattleCommand': {
+      if (expedition.phase !== 'waterway-battle' || !expedition.waterwayBattle) {
+        return unchanged(expedition)
+      }
+      const waterwayBattle = updateWaterwayBattle(
+        expedition.waterwayBattle,
+        action.command,
+      )
+      if (waterwayBattle === expedition.waterwayBattle) return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: waterwayBattle.outcome === 'secured'
+            ? 'waterway-result'
+            : expedition.phase,
+          waterwayBattle,
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'retryWaterwayEncounter': {
+      if (
+        expedition.phase !== 'waterway-battle' ||
+        !expedition.waterwayBattle ||
+        !expedition.waterwayApproach ||
+        !['ecosystem-damaged', 'party-defeated'].includes(
+          expedition.waterwayBattle.outcome,
+        )
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          waterwayBattle: createWaterwayBattleState(expedition.waterwayApproach),
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'flushWaterwayValve': {
+      if (expedition.phase !== 'waterway-result') return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'waterway-complete',
+          waterwayBattle: null,
+          waterwayCompleted: true,
+        },
+        recruitedSumiwatari: false,
+        completedWaterway: true,
+      }
+    }
     case 'returnToLaboratory': {
       if (
         expedition.phase === 'battle' ||
         expedition.phase === 'tower-battle' ||
         expedition.phase === 'tower-result' ||
+        expedition.phase === 'waterway-battle' ||
+        expedition.phase === 'waterway-result' ||
         expedition.phase === 'idle'
       ) {
         return unchanged(expedition)
@@ -271,6 +345,7 @@ export function advanceExpedition(
           currentNodeId: null,
           battle: null,
           towerBattle: null,
+          waterwayBattle: null,
         },
         recruitedSumiwatari: false,
       }

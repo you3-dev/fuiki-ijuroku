@@ -1,7 +1,12 @@
 import { GAME_SCHEMA_VERSION, type GameSessionState } from './types'
 import type { ExpeditionPhase, RegionNodeId } from '../exploration/types'
 import { allyIds, combatants, skillDefinitions } from '../battle/data'
-import type { AllyCombatantId, CombatantId } from '../battle/types'
+import type {
+  AllyCombatantId,
+  CombatantId,
+  WaterwayApproach,
+  WaterwayTargetId,
+} from '../battle/types'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -54,6 +59,10 @@ const EXPEDITION_PHASES: ExpeditionPhase[] = [
   'tower-battle',
   'tower-result',
   'tower-complete',
+  'waterway-event',
+  'waterway-battle',
+  'waterway-result',
+  'waterway-complete',
 ]
 
 function isRegionNodeId(value: unknown): value is RegionNodeId {
@@ -142,6 +151,89 @@ function isTowerBattle(value: unknown): boolean {
   return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
 }
 
+const WATERWAY_TARGET_IDS: WaterwayTargetId[] = [
+  'pollution-mass',
+  'polluted-sumiwatari',
+]
+const WATERWAY_APPROACHES: WaterwayApproach[] = [
+  'observe-intake',
+  'hurry-to-valve',
+]
+
+function isWaterwayPlan(value: unknown, actorId: AllyCombatantId): boolean {
+  if (!isRecord(value) || !['basic', 'defend', 'skill'].includes(String(value.kind))) {
+    return false
+  }
+  if (value.kind === 'basic') {
+    return WATERWAY_TARGET_IDS.includes(value.targetId as WaterwayTargetId)
+  }
+  if (value.kind === 'defend') return value.targetId === actorId
+  if (!isNonEmptyString(value.skillId)) return false
+  const skill = skillDefinitions[value.skillId as keyof typeof skillDefinitions]
+  if (!skill || skill.actorId !== actorId) return false
+  if (value.skillId === 'calming-glimmer') {
+    return value.targetId === 'polluted-sumiwatari'
+  }
+  if (value.skillId === 'burrow-guard') {
+    return allyIds.includes(value.targetId as AllyCombatantId) && value.targetId !== actorId
+  }
+  return (
+    allyIds.includes(value.targetId as AllyCombatantId) ||
+    WATERWAY_TARGET_IDS.includes(value.targetId as WaterwayTargetId)
+  )
+}
+
+function isWaterwayBattle(value: unknown): boolean {
+  if (!isRecord(value) || value.kind !== 'sunken-waterway') return false
+  if (!['planning', 'committed'].includes(String(value.phase))) return false
+  if (!Number.isInteger(value.round) || Number(value.round) < 1) return false
+  if (!isNonNegativeInteger(value.randomSeed)) return false
+  if (!WATERWAY_APPROACHES.includes(value.approach as WaterwayApproach)) return false
+  if (!isRecord(value.allies)) return false
+  for (const id of allyIds) {
+    const ally = value.allies[id]
+    if (!isRecord(ally) || ally.id !== id) return false
+    if (!isNonNegativeInteger(ally.currentHp) || Number(ally.currentHp) > combatants[id].maxHp) {
+      return false
+    }
+    if (!isNonNegativeInteger(ally.vitality) || Number(ally.vitality) > 100) return false
+    if (!isNonNegativeInteger(ally.pollution) || Number(ally.pollution) > 3) return false
+    if (typeof ally.guarding !== 'boolean') return false
+  }
+  if (!isRecord(value.targets)) return false
+  const maxHp: Record<WaterwayTargetId, number> = {
+    'pollution-mass': 50,
+    'polluted-sumiwatari': 70,
+  }
+  for (const id of WATERWAY_TARGET_IDS) {
+    const target = value.targets[id]
+    if (!isRecord(target) || target.id !== id) return false
+    if (!isNonNegativeInteger(target.currentHp) || Number(target.currentHp) > maxHp[id]) {
+      return false
+    }
+    if (!isNonNegativeInteger(target.pollution) || Number(target.pollution) > 100) {
+      return false
+    }
+  }
+  if (!isRecord(value.plans)) return false
+  if (!allyIds.every((id) => isWaterwayPlan((value.plans as Record<string, unknown>)[id], id))) {
+    return false
+  }
+  if (!['none', 'indicate-safe-route'].includes(String(value.supportPlan))) return false
+  if (!isNonNegativeInteger(value.vigilance) || Number(value.vigilance) > 100) return false
+  if (typeof value.calmed !== 'boolean' || typeof value.observedSource !== 'boolean') {
+    return false
+  }
+  if (
+    !['ongoing', 'secured', 'ecosystem-damaged', 'party-defeated'].includes(
+      String(value.outcome),
+    )
+  ) {
+    return false
+  }
+  return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
+}
+
 function isExpeditionState(value: unknown): boolean {
   if (!isRecord(value)) return false
   if (!EXPEDITION_PHASES.includes(value.phase as ExpeditionPhase)) return false
@@ -152,6 +244,13 @@ function isExpeditionState(value: unknown): boolean {
   if (typeof value.entryObserved !== 'boolean') return false
   if (typeof value.firstRecruitmentCompleted !== 'boolean') return false
   if (typeof value.towerCompleted !== 'boolean') return false
+  if (typeof value.waterwayCompleted !== 'boolean') return false
+  if (
+    value.waterwayApproach !== null &&
+    !WATERWAY_APPROACHES.includes(value.waterwayApproach as WaterwayApproach)
+  ) {
+    return false
+  }
   if (
     value.selectedBranchId !== null &&
     value.selectedBranchId !== 'observation-tower' &&
@@ -164,14 +263,16 @@ function isExpeditionState(value: unknown): boolean {
       return (
         value.currentNodeId === null &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'entrance':
       return (
         value.currentNodeId === 'marsh-entrance' &&
         value.firstRecruitmentCompleted === false &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'node-choice':
       return (
@@ -180,14 +281,16 @@ function isExpeditionState(value: unknown): boolean {
         value.unlockedNodeIds.includes('graymoss-shallows') &&
         value.firstRecruitmentCompleted === false &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'battle':
       return (
         value.currentNodeId === 'graymoss-shallows' &&
         value.firstRecruitmentCompleted === false &&
         isTutorialBattle(value.battle) &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'recruit-result':
       return (
@@ -196,7 +299,8 @@ function isExpeditionState(value: unknown): boolean {
         value.unlockedNodeIds.includes('observation-tower') &&
         value.unlockedNodeIds.includes('sunken-waterway') &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'branch-choice':
       return (
@@ -205,7 +309,8 @@ function isExpeditionState(value: unknown): boolean {
         value.unlockedNodeIds.includes('observation-tower') &&
         value.unlockedNodeIds.includes('sunken-waterway') &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'branch-selected':
       return (
@@ -214,7 +319,8 @@ function isExpeditionState(value: unknown): boolean {
         value.currentNodeId === value.selectedBranchId &&
         value.unlockedNodeIds.includes(value.selectedBranchId) &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'tower-event':
       return (
@@ -223,7 +329,8 @@ function isExpeditionState(value: unknown): boolean {
         value.currentNodeId === 'observation-tower' &&
         value.selectedBranchId === 'observation-tower' &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     case 'tower-battle':
       return (
@@ -233,6 +340,7 @@ function isExpeditionState(value: unknown): boolean {
         value.selectedBranchId === 'observation-tower' &&
         value.battle === null &&
         isTowerBattle(value.towerBattle) &&
+        value.waterwayBattle === null &&
         (value.towerBattle as Record<string, unknown>).outcome !== 'cooperation'
       )
     case 'tower-result':
@@ -243,6 +351,7 @@ function isExpeditionState(value: unknown): boolean {
         value.selectedBranchId === 'observation-tower' &&
         value.battle === null &&
         isTowerBattle(value.towerBattle) &&
+        value.waterwayBattle === null &&
         (value.towerBattle as Record<string, unknown>).outcome === 'cooperation'
       )
     case 'tower-complete':
@@ -252,7 +361,54 @@ function isExpeditionState(value: unknown): boolean {
         value.currentNodeId === 'observation-tower' &&
         value.selectedBranchId === 'observation-tower' &&
         value.battle === null &&
-        value.towerBattle === null
+        value.towerBattle === null &&
+        value.waterwayBattle === null
+      )
+    case 'waterway-event':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.waterwayCompleted === false &&
+        value.currentNodeId === 'sunken-waterway' &&
+        value.selectedBranchId === 'sunken-waterway' &&
+        value.waterwayApproach === null &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null
+      )
+    case 'waterway-battle':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.waterwayCompleted === false &&
+        value.currentNodeId === 'sunken-waterway' &&
+        value.selectedBranchId === 'sunken-waterway' &&
+        WATERWAY_APPROACHES.includes(value.waterwayApproach as WaterwayApproach) &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        isWaterwayBattle(value.waterwayBattle) &&
+        (value.waterwayBattle as Record<string, unknown>).approach === value.waterwayApproach &&
+        (value.waterwayBattle as Record<string, unknown>).outcome !== 'secured'
+      )
+    case 'waterway-result':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.waterwayCompleted === false &&
+        value.currentNodeId === 'sunken-waterway' &&
+        value.selectedBranchId === 'sunken-waterway' &&
+        WATERWAY_APPROACHES.includes(value.waterwayApproach as WaterwayApproach) &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        isWaterwayBattle(value.waterwayBattle) &&
+        (value.waterwayBattle as Record<string, unknown>).outcome === 'secured'
+      )
+    case 'waterway-complete':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.waterwayCompleted === true &&
+        value.currentNodeId === 'sunken-waterway' &&
+        value.selectedBranchId === 'sunken-waterway' &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null
       )
     default:
       return false
@@ -322,9 +478,12 @@ export function isGameSessionState(value: unknown): value is GameSessionState {
   const expectsTowerKirihane =
     expeditionRecord.phase === 'tower-result' || expeditionRecord.towerCompleted === true
   if (hasTowerKirihane !== expectsTowerKirihane) return false
+  const completedRoutes =
+    Number(expeditionRecord.towerCompleted === true) +
+    Number(expeditionRecord.waterwayCompleted === true)
   if (
-    expeditionRecord.towerCompleted === true &&
-    (Number(value.objective.recordsFound) < 1 || Number(value.objective.valvesRestored) < 1)
+    Number(value.objective.recordsFound) < completedRoutes ||
+    Number(value.objective.valvesRestored) < completedRoutes
   ) {
     return false
   }

@@ -1166,6 +1166,36 @@ p {
   background: rgb(112 192 180 / 16%);
 }
 
+.waterway-target-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.waterway-target-grid .enemy-status-card {
+  align-content: start;
+}
+
+.polluted-orb {
+  background: radial-gradient(circle at 38% 32%, #879d8b, #39463f 70%);
+  color: #edf3df;
+}
+
+.waterway-illustration {
+  background: linear-gradient(180deg, #9ba596 0 45%, #536b68 46% 100%);
+}
+
+.recommended-route {
+  border-color: var(--color-water);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-water) 45%, transparent);
+}
+
+@media (max-width: 520px) {
+  .waterway-target-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .support-planner,
 .ally-plan-card {
   display: grid;
