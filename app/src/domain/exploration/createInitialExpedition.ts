@@ -9,6 +9,8 @@ export function createInitialExpeditionState(): ExpeditionState {
     firstRecruitmentCompleted: false,
     selectedBranchId: null,
     battle: null,
+    towerBattle: null,
+    towerCompleted: false,
   }
 }
 

@@ -55,6 +55,8 @@ export function AppRouter() {
 
   const explorationLocked =
     state.expedition.phase === 'battle' ||
+    state.expedition.phase === 'tower-battle' ||
+    state.expedition.phase === 'tower-result' ||
     (state.expedition.phase === 'recruit-result' && saveStatus !== 'saved')
 
   return (

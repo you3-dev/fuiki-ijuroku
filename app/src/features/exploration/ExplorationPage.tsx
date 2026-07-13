@@ -4,8 +4,10 @@ import { useGameSession } from '../../app/GameSessionContext'
 import { canRequestCooperation } from '../../domain/exploration/commands'
 import { graymossNodes } from '../../domain/exploration/data'
 import type { ExplorationAction } from '../../domain/exploration/types'
+import { TowerBattlePanel } from './TowerBattlePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
+const KIRIHANE_ID = 'creature-kirihane-tower-001'
 
 function BattlePanel({
   runAction,
@@ -109,12 +111,24 @@ export function ExplorationPage() {
   const { state, execute, saveStatus, retrySave } = useGameSession()
   const navigate = useNavigate()
   const recruited = state?.party.front.find((creature) => creature?.id === SUMIWATARI_ID)
+  const recruitedKirihane = state
+    ? [...state.party.front, ...state.party.reserve].find(
+        (creature) => creature?.id === KIRIHANE_ID,
+      )
+    : undefined
   const [nickname, setNickname] = useState(recruited?.displayName ?? 'スミワタリ')
+  const [kirihaneNickname, setKirihaneNickname] = useState(
+    recruitedKirihane?.displayName ?? 'キリハネ',
+  )
   const [actionError, setActionError] = useState<string | null>(null)
 
   useEffect(() => {
     if (recruited) setNickname(recruited.displayName)
   }, [recruited])
+
+  useEffect(() => {
+    if (recruitedKirihane) setKirihaneNickname(recruitedKirihane.displayName)
+  }, [recruitedKirihane])
 
   if (!state || state.expedition.phase === 'idle') {
     return <Navigate to="/laboratory" replace />
@@ -149,6 +163,26 @@ export function ExplorationPage() {
         await execute({ type: 'renameCreature', creatureId: recruited.id, name: nickname })
       }
       await execute({ type: 'exploration', action: { type: 'finishRecruitment' } })
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : '保存に失敗しました。')
+    }
+  }
+
+  async function finishTowerResult() {
+    setActionError(null)
+    try {
+      if (
+        recruitedKirihane &&
+        kirihaneNickname.trim() &&
+        kirihaneNickname.trim() !== recruitedKirihane.displayName
+      ) {
+        await execute({
+          type: 'renameCreature',
+          creatureId: recruitedKirihane.id,
+          name: kirihaneNickname,
+        })
+      }
+      await execute({ type: 'exploration', action: { type: 'alignTowerReflector' } })
     } catch (error) {
       setActionError(error instanceof Error ? error.message : '保存に失敗しました。')
     }
@@ -193,6 +227,14 @@ export function ExplorationPage() {
           </section>
         )}
 
+        {expedition.phase === 'tower-result' && saveStatus !== 'saved' && (
+          <section className="field-event-card" aria-live="polite">
+            <p className="eyebrow">重要記録</p>
+            <h1>キリハネの協力を保存しています</h1>
+            <p>控えへの個体登録を確定してから、先遣隊記録と上流弁を処理します。</p>
+          </section>
+        )}
+
         {expedition.phase === 'entrance' && (
           <section className="field-event-card">
             <p className="eyebrow">地点イベント</p>
@@ -222,6 +264,25 @@ export function ExplorationPage() {
         )}
 
         {expedition.phase === 'battle' && <BattlePanel runAction={runAction} />}
+
+        {expedition.phase === 'tower-event' && (
+          <section className="field-event-card tower-arrival-card">
+            <p className="eyebrow">観測櫓跡・地点イベント</p>
+            <h1>霧の中の短い鳴き声</h1>
+            <div className="field-illustration tower-illustration" aria-hidden="true">
+              <span>櫓</span><span>霧</span><span>翅</span>
+            </div>
+            <p>折れた観測櫓の上から、一定周期の鳴き声が返っています。霧は濃いものの、敵意だけで発生したものには見えません。</p>
+            <blockquote>攻撃音を混ぜず、前衛3体の防御を先に揃える。霧の中で残る音だけを記録する。</blockquote>
+            <button className="primary-button full-button" type="button" onClick={() => void runAction({ type: 'beginTowerEncounter' })}>
+              前衛3体の行動を計画する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'tower-battle' && (
+          <TowerBattlePanel runAction={runAction} />
+        )}
 
         {expedition.phase === 'recruit-result' && saveStatus === 'saved' && (
           <section className="field-event-card recruit-card">
@@ -262,6 +323,40 @@ export function ExplorationPage() {
           </section>
         )}
 
+        {expedition.phase === 'tower-result' && saveStatus === 'saved' && (
+          <section className="field-event-card recruit-card">
+            <p className="eyebrow">協力成立・先遣隊第1記録</p>
+            <h1>霧は道を隠すためにあった</h1>
+            <div className="specimen-orb recruited" aria-hidden="true">霧</div>
+            <p>キリハネは主人公たちを反射板の残る足場へ導きました。先遣隊は鳴き声と移動経路を使い、安全な上流弁への道を記録していました。</p>
+            <label htmlFor="kirihane-nickname">記録する呼称</label>
+            <input
+              id="kirihane-nickname"
+              value={kirihaneNickname}
+              maxLength={20}
+              onChange={(event) => setKirihaneNickname(event.target.value)}
+            />
+            <button className="primary-button full-button" type="button" disabled={!kirihaneNickname.trim()} onClick={() => void finishTowerResult()}>
+              呼称を保存して反射板を合わせる
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'tower-complete' && (
+          <section className="field-event-card">
+            <p className="eyebrow">上流弁復旧</p>
+            <h1>遠隔操作信号を確認</h1>
+            <p>霧が薄くなる周期に反射板を合わせ、古代制御塔へ信号を送りました。湿原上流から、止まっていた水音が戻ります。</p>
+            <div className="progress-grid" aria-label="今回の調査成果">
+              <div><span>先遣隊記録</span><strong>1 / 3</strong></div>
+              <div><span>水路弁復旧</span><strong>1 / 2</strong></div>
+            </div>
+            <button className="primary-button full-button" type="button" onClick={() => void returnToLaboratory()}>
+              研究所へ帰還する
+            </button>
+          </section>
+        )}
+
         {expedition.phase === 'branch-selected' && expedition.selectedBranchId && (
           <section className="field-event-card">
             <p className="eyebrow">調査経路を確定</p>
@@ -274,7 +369,14 @@ export function ExplorationPage() {
           </section>
         )}
 
-        {!['battle', 'recruit-result', 'branch-selected'].includes(expedition.phase) && (
+        {![
+          'battle',
+          'recruit-result',
+          'branch-selected',
+          'tower-battle',
+          'tower-result',
+          'tower-complete',
+        ].includes(expedition.phase) && (
           <button className="return-button" type="button" onClick={() => void returnToLaboratory()}>
             調査を中断して研究所へ戻る
           </button>

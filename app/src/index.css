@@ -1083,6 +1083,165 @@ p {
   color: #c8d9d0;
 }
 
+.standard-battle {
+  overflow: hidden;
+  border: 1px solid rgb(216 208 185 / 55%);
+  border-radius: var(--radius-card);
+  color: var(--color-ink);
+  background: var(--color-paper-raised);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 24%);
+}
+
+.standard-battle-heading {
+  display: flex;
+  min-height: 10rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  color: var(--color-paper-raised);
+  background:
+    radial-gradient(circle at 80% 35%, rgb(198 220 212 / 18%), transparent 8rem),
+    linear-gradient(140deg, #4b5b57, #263235 64%, #1b2528);
+}
+
+.standard-battle-heading .eyebrow {
+  color: #c8d9d0;
+}
+
+.specimen-orb.misted {
+  border-color: #c8d9d0;
+  background: #566b68;
+  box-shadow: 0 0 2.2rem rgb(216 232 226 / 28%);
+}
+
+.enemy-status-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: rgb(231 224 204 / 68%);
+}
+
+.enemy-status-card > div {
+  display: grid;
+  gap: 0.2rem;
+  border-right: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.enemy-status-card > div:last-child {
+  border-right: 0;
+}
+
+.enemy-status-card span,
+.ally-plan-heading span,
+.support-planner small {
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+}
+
+.tower-condition-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  padding: 0.8rem 1rem 0;
+}
+
+.tower-condition-strip span {
+  min-height: 2.25rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.35rem;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.tower-condition-strip .condition-met {
+  border-style: solid;
+  border-color: var(--color-water);
+  color: var(--color-moss-deep);
+  background: rgb(112 192 180 / 16%);
+}
+
+.support-planner,
+.ally-plan-card {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.support-planner {
+  margin: 0.8rem 1rem;
+  border: 1px solid var(--color-water);
+  border-radius: var(--radius-control);
+  padding: 0.75rem;
+  background: rgb(112 192 180 / 10%);
+}
+
+.support-planner label,
+.ally-plan-card label {
+  color: var(--color-ink-muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.support-planner select,
+.ally-plan-card select {
+  width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.45rem;
+  padding: 0.55rem;
+  color: var(--color-ink);
+  background: #fffdf4;
+}
+
+.ally-plan-list {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0 1rem;
+}
+
+.ally-plan-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: 0.75rem;
+  background: rgb(231 224 204 / 54%);
+}
+
+.ally-plan-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.battle-log {
+  margin: 0.8rem 1rem;
+  border-left: 3px solid var(--color-water);
+  padding: 0.2rem 0 0.2rem 0.75rem;
+}
+
+.battle-log ul,
+ul.battle-log {
+  margin: 0.4rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.battle-log li {
+  margin-bottom: 0.3rem;
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.battle-commit-button {
+  width: calc(100% - 2rem);
+  margin: 0 1rem 1rem;
+}
+
 .recruit-card label {
   display: block;
   margin-bottom: 0.4rem;

@@ -132,4 +132,81 @@ describe('executeGameCommand', () => {
       }),
     ).toBe(fullFront)
   })
+
+  it('completes the observation tower, recruits Kirihane once, and records progress', () => {
+    let state = executeGameCommand(createInitialGameState(), {
+      type: 'recordPreparation',
+    })
+    const firstLoop = [
+      { type: 'startExpedition' } as const,
+      { type: 'observeEntrance' } as const,
+      { type: 'enterNode', nodeId: 'graymoss-shallows' } as const,
+      { type: 'battleAction', action: 'observe' } as const,
+      { type: 'battleAction', action: 'defend' } as const,
+      { type: 'battleAction', action: 'cleanse' } as const,
+      { type: 'battleAction', action: 'calm' } as const,
+      { type: 'battleAction', action: 'requestCooperation' } as const,
+      { type: 'finishRecruitment' } as const,
+      { type: 'enterNode', nodeId: 'observation-tower' } as const,
+      { type: 'beginTowerEncounter' } as const,
+    ]
+    for (const action of firstLoop) {
+      state = executeGameCommand(state, { type: 'exploration', action })
+    }
+
+    const towerCommands = [
+      { type: 'setSupport', support: 'observe-call' } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+      { type: 'setSupport', support: 'calming-chime' } as const,
+      {
+        type: 'setPlan',
+        actorId: 'tomoshigoke',
+        plan: { kind: 'skill', skillId: 'calming-glimmer', targetId: 'kirihane' },
+      } as const,
+      {
+        type: 'setPlan',
+        actorId: 'numakuguri',
+        plan: { kind: 'skill', skillId: 'burrow-guard', targetId: 'tomoshigoke' },
+      } as const,
+      {
+        type: 'setPlan',
+        actorId: 'sumiwatari',
+        plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'tomoshigoke' },
+      } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+      { type: 'setSupport', support: 'request-cooperation' } as const,
+      { type: 'commitRound' } as const,
+      { type: 'resolveRound' } as const,
+    ]
+    for (const command of towerCommands) {
+      state = executeGameCommand(state, {
+        type: 'exploration',
+        action: { type: 'towerBattleCommand', command },
+      })
+    }
+
+    expect(state.expedition.phase).toBe('tower-result')
+    expect(state.party.reserve[0]).toMatchObject({
+      id: 'creature-kirihane-tower-001',
+      speciesId: 'kirihane',
+    })
+
+    state = executeGameCommand(state, {
+      type: 'exploration',
+      action: { type: 'alignTowerReflector' },
+    })
+    expect(state.expedition).toMatchObject({
+      phase: 'tower-complete',
+      towerCompleted: true,
+    })
+    expect(state.objective.recordsFound).toBe(1)
+    expect(state.objective.valvesRestored).toBe(1)
+    expect(
+      state.researchUpdates.filter(
+        (update) => update.id === 'update-upstream-valve-restored',
+      ),
+    ).toHaveLength(1)
+  })
 })

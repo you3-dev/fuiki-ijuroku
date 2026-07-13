@@ -48,7 +48,7 @@ export function parseGameBackup(text: string): GameSessionState {
       ? (rawState as Record<string, unknown>).schemaVersion
       : undefined
   if (
-    (backup.schemaVersion !== 1 && backup.schemaVersion !== GAME_SCHEMA_VERSION) ||
+    (![1, 2, GAME_SCHEMA_VERSION].includes(Number(backup.schemaVersion))) ||
     backup.schemaVersion !== rawStateVersion
   ) {
     throw new Error('バックアップの版情報が一致しません。')

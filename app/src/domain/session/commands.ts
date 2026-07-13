@@ -35,6 +35,29 @@ const recruitmentUpdate: ResearchUpdate = {
   acknowledged: false,
 }
 
+const kirihane: CreatureSummary = {
+  id: 'creature-kirihane-tower-001',
+  speciesId: 'kirihane',
+  displayName: 'キリハネ',
+  level: 3,
+  role: '霧・弱体',
+  status: 'ready',
+}
+
+const towerCooperationUpdate: ResearchUpdate = {
+  id: 'update-kirihane-cooperated',
+  title: '霧中の協力個体を登録',
+  detail: '鳴き声の周期を返し、キリハネを控えへ迎えました。',
+  acknowledged: false,
+}
+
+const towerCompletionUpdate: ResearchUpdate = {
+  id: 'update-upstream-valve-restored',
+  title: '上流弁を復旧',
+  detail: '先遣隊の第1記録を回収し、観測櫓から遠隔信号を送りました。',
+  acknowledged: false,
+}
+
 export function executeGameCommand(
   state: GameSessionState,
   command: GameCommand,
@@ -131,6 +154,19 @@ export function executeGameCommand(
         if (!alreadyInFront && !state.party.front.includes(null)) return state
       }
 
+      if (
+        command.action.type === 'towerBattleCommand' &&
+        ((command.action.command.type === 'setSupport' &&
+          command.action.command.support === 'request-cooperation') ||
+          (command.action.command.type === 'resolveRound' &&
+            state.expedition.towerBattle?.supportPlan === 'request-cooperation'))
+      ) {
+        const alreadyOwned = [...state.party.front, ...state.party.reserve].some(
+          (creature) => creature?.id === kirihane.id,
+        )
+        if (!alreadyOwned && !state.party.reserve.includes(null)) return state
+      }
+
       const transition = advanceExpedition(state.expedition, command.action)
       if (transition.expedition === state.expedition) return state
 
@@ -155,6 +191,39 @@ export function executeGameCommand(
           researchUpdates = [...researchUpdates, recruitmentUpdate]
         }
       }
+      if (transition.recruitedKirihane) {
+        const alreadyOwned = [...party.front, ...party.reserve].some(
+          (creature) => creature?.id === kirihane.id,
+        )
+        if (!alreadyOwned) {
+          const emptyReserveIndex = party.reserve.findIndex(
+            (creature) => creature === null,
+          )
+          if (emptyReserveIndex >= 0) {
+            const reserve = [...party.reserve]
+            reserve[emptyReserveIndex] = kirihane
+            party = { ...party, reserve }
+          }
+        }
+        if (!researchUpdates.some((update) => update.id === towerCooperationUpdate.id)) {
+          researchUpdates = [...researchUpdates, towerCooperationUpdate]
+        }
+      }
+
+      let objective = state.objective
+      if (transition.completedTower) {
+        objective = {
+          ...objective,
+          recordsFound: Math.min(objective.recordsTotal, objective.recordsFound + 1),
+          valvesRestored: Math.min(
+            objective.valvesTotal,
+            objective.valvesRestored + 1,
+          ),
+        }
+        if (!researchUpdates.some((update) => update.id === towerCompletionUpdate.id)) {
+          researchUpdates = [...researchUpdates, towerCompletionUpdate]
+        }
+      }
 
       return {
         ...state,
@@ -162,6 +231,7 @@ export function executeGameCommand(
         expedition: transition.expedition,
         party,
         researchUpdates,
+        objective,
       }
     }
   }

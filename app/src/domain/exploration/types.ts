@@ -12,6 +12,10 @@ export type ExpeditionPhase =
   | 'recruit-result'
   | 'branch-choice'
   | 'branch-selected'
+  | 'tower-event'
+  | 'tower-battle'
+  | 'tower-result'
+  | 'tower-complete'
 
 export type TutorialBattleState = {
   round: number
@@ -37,6 +41,8 @@ export type ExpeditionState = {
   firstRecruitmentCompleted: boolean
   selectedBranchId: 'observation-tower' | 'sunken-waterway' | null
   battle: TutorialBattleState | null
+  towerBattle: TowerBattleState | null
+  towerCompleted: boolean
 }
 
 export type ExplorationAction =
@@ -48,9 +54,16 @@ export type ExplorationAction =
       action: 'observe' | 'defend' | 'cleanse' | 'calm' | 'requestCooperation'
     }
   | { type: 'finishRecruitment' }
+  | { type: 'beginTowerEncounter' }
+  | { type: 'towerBattleCommand'; command: BattleCommand }
+  | { type: 'retryTowerEncounter' }
+  | { type: 'alignTowerReflector' }
   | { type: 'returnToLaboratory' }
 
 export type ExplorationTransition = {
   expedition: ExpeditionState
   recruitedSumiwatari: boolean
+  recruitedKirihane?: boolean
+  completedTower?: boolean
 }
+import type { BattleCommand, TowerBattleState } from '../battle/types'

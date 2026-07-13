@@ -1,6 +1,6 @@
 import type { ExpeditionState, ExplorationAction } from '../exploration/types'
 
-export const GAME_SCHEMA_VERSION = 2
+export const GAME_SCHEMA_VERSION = 3
 
 export type CreatureSummary = {
   id: string

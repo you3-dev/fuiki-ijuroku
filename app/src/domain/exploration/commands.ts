@@ -1,4 +1,5 @@
 import { createTutorialBattleState } from './createInitialExpedition'
+import { createTowerBattleState, updateTowerBattle } from '../battle/towerBattle'
 import type {
   ExpeditionState,
   ExplorationAction,
@@ -86,12 +87,18 @@ export function advanceExpedition(
         expedition.phase === 'branch-choice' &&
         (action.nodeId === 'observation-tower' || action.nodeId === 'sunken-waterway')
       ) {
+        const isTower = action.nodeId === 'observation-tower'
         return {
           expedition: {
             ...expedition,
-            phase: 'branch-selected',
+            phase: isTower
+              ? expedition.towerCompleted
+                ? 'tower-complete'
+                : 'tower-event'
+              : 'branch-selected',
             currentNodeId: action.nodeId,
             selectedBranchId: action.nodeId,
+            towerBattle: null,
           },
           recruitedSumiwatari: false,
         }
@@ -179,12 +186,92 @@ export function advanceExpedition(
         recruitedSumiwatari: false,
       }
     }
-    case 'returnToLaboratory': {
-      if (expedition.phase === 'battle' || expedition.phase === 'idle') {
+    case 'beginTowerEncounter': {
+      if (
+        expedition.phase !== 'tower-event' ||
+        expedition.currentNodeId !== 'observation-tower'
+      ) {
         return unchanged(expedition)
       }
       return {
-        expedition: { ...expedition, phase: 'idle', currentNodeId: null, battle: null },
+        expedition: {
+          ...expedition,
+          phase: 'tower-battle',
+          towerBattle: createTowerBattleState(),
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'towerBattleCommand': {
+      if (expedition.phase !== 'tower-battle' || !expedition.towerBattle) {
+        return unchanged(expedition)
+      }
+      const towerBattle = updateTowerBattle(
+        expedition.towerBattle,
+        action.command,
+      )
+      if (towerBattle === expedition.towerBattle) return unchanged(expedition)
+      if (towerBattle.outcome === 'cooperation') {
+        return {
+          expedition: {
+            ...expedition,
+            phase: 'tower-result',
+            towerBattle,
+          },
+          recruitedSumiwatari: false,
+          recruitedKirihane: true,
+        }
+      }
+      return {
+        expedition: { ...expedition, towerBattle },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'retryTowerEncounter': {
+      if (
+        expedition.phase !== 'tower-battle' ||
+        !expedition.towerBattle ||
+        !['enemy-defeated', 'party-defeated'].includes(
+          expedition.towerBattle.outcome,
+        )
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: { ...expedition, towerBattle: createTowerBattleState() },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'alignTowerReflector': {
+      if (expedition.phase !== 'tower-result') return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'tower-complete',
+          towerBattle: null,
+          towerCompleted: true,
+        },
+        recruitedSumiwatari: false,
+        completedTower: true,
+      }
+    }
+    case 'returnToLaboratory': {
+      if (
+        expedition.phase === 'battle' ||
+        expedition.phase === 'tower-battle' ||
+        expedition.phase === 'tower-result' ||
+        expedition.phase === 'idle'
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'idle',
+          currentNodeId: null,
+          battle: null,
+          towerBattle: null,
+        },
         recruitedSumiwatari: false,
       }
     }

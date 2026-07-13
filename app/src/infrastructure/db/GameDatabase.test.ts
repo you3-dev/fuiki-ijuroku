@@ -42,9 +42,9 @@ describe('GameDatabase', () => {
     const migrated = await database.loadSession()
     const stored = await database.sessions.get('active')
 
-    expect(migrated?.schemaVersion).toBe(2)
+    expect(migrated?.schemaVersion).toBe(3)
     expect(migrated?.expedition.phase).toBe('idle')
-    expect(stored?.schemaVersion).toBe(2)
+    expect(stored?.schemaVersion).toBe(3)
   })
 
   it('does not allow an older revision to overwrite a newer revision', async () => {
