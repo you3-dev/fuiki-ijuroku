@@ -1,10 +1,17 @@
-const entries = [
-  { id: 'tomoshigoke', name: 'トモシゴケ', stage: '初期同行', mark: '灯' },
-  { id: 'numakuguri', name: 'ヌマクグリ', stage: '初期同行', mark: '沼' },
-  { id: 'unknown-shallows', name: '未同定', stage: '痕跡未確認', mark: '?' },
-]
+import { useGameSession } from '../../app/GameSessionContext'
 
 export function BestiaryPage() {
+  const { state } = useGameSession()
+  if (!state) return null
+  const sumiwatariObserved =
+    state.expedition.firstRecruitmentCompleted || Boolean(state.expedition.battle?.observed)
+  const entries = [
+    { id: 'tomoshigoke', name: 'トモシゴケ', stage: '初期同行', mark: '灯' },
+    { id: 'numakuguri', name: 'ヌマクグリ', stage: '初期同行', mark: '沼' },
+    sumiwatariObserved
+      ? { id: 'sumiwatari', name: 'スミワタリ', stage: '観察済み', mark: '澄' }
+      : { id: 'unknown-shallows', name: '未同定', stage: '痕跡未確認', mark: '?' },
+  ]
   return (
     <div className="page-stack">
       <section className="page-intro">
@@ -17,7 +24,7 @@ export function BestiaryPage() {
         <div className="card-heading-row">
           <div>
             <p className="card-kicker">灰苔湿原</p>
-            <h3>調査済み 2 / 6</h3>
+            <h3>調査済み {sumiwatariObserved ? 3 : 2} / 6</h3>
           </div>
           <span className="specimen-tag">FIELD-01</span>
         </div>

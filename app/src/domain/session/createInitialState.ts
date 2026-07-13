@@ -3,6 +3,7 @@ import {
   type CreatureSummary,
   type GameSessionState,
 } from './types'
+import { createInitialExpeditionState } from '../exploration/createInitialExpedition'
 
 const tomoshigoke: CreatureSummary = {
   id: 'creature-tomoshigoke-001',
@@ -60,6 +61,7 @@ export function createInitialGameState(now = new Date()): GameSessionState {
         acknowledged: false,
       },
     ],
+    expedition: createInitialExpeditionState(),
     settings: {
       soundEnabled: false,
       reduceMotion: false,

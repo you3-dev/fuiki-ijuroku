@@ -1,0 +1,35 @@
+import type { RegionNodeId } from './types'
+
+export type RegionNode = {
+  id: RegionNodeId
+  name: string
+  code: string
+  summary: string
+}
+
+export const graymossNodes: Record<RegionNodeId, RegionNode> = {
+  'marsh-entrance': {
+    id: 'marsh-entrance',
+    name: '湿原入口',
+    code: 'GM-01',
+    summary: '灰色へ変わる苔の反応から、水に混じる遺跡波動を調べる。',
+  },
+  'graymoss-shallows': {
+    id: 'graymoss-shallows',
+    name: '灰苔の浅瀬',
+    code: 'GM-02',
+    summary: '黒く濁った半透明の異獣が、濾過膜を地面へ擦りつけている。',
+  },
+  'observation-tower': {
+    id: 'observation-tower',
+    name: '観測櫓跡',
+    code: 'GM-03A',
+    summary: '霧の向こうに、上流弁の反射板が残されている。',
+  },
+  'sunken-waterway': {
+    id: 'sunken-waterway',
+    name: '沈み水路',
+    code: 'GM-03B',
+    summary: '黒い沈殿物の下で、下流側の水路が止まっている。',
+  },
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { BestiaryPage } from '../features/bestiary/BestiaryPage'
+import { ExplorationPage } from '../features/exploration/ExplorationPage'
 import { LaboratoryHomePage } from '../features/laboratory/LaboratoryHomePage'
 import { PartyPage } from '../features/party/PartyPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
@@ -52,9 +53,20 @@ export function AppRouter() {
     )
   }
 
+  const explorationLocked =
+    state.expedition.phase === 'battle' ||
+    (state.expedition.phase === 'recruit-result' && saveStatus !== 'saved')
+
   return (
     <Routes>
-      <Route element={<AppShell />}>
+      <Route path="exploration" element={<ExplorationPage />} />
+      <Route
+        element={
+          explorationLocked
+            ? <Navigate to="/exploration" replace />
+            : <AppShell />
+        }
+      >
         <Route index element={<Navigate to="/laboratory" replace />} />
         <Route path="laboratory" element={<LaboratoryHomePage />} />
         <Route path="party" element={<PartyPage />} />

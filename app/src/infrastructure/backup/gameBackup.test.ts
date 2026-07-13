@@ -10,6 +10,29 @@ describe('game backup', () => {
     expect(parseGameBackup(text)).toEqual(state)
   })
 
+  it('migrates a schema version 1 backup by adding a fresh expedition state', () => {
+    const { expedition: _expedition, ...currentState } = createInitialGameState(
+      new Date('2026-07-13T00:00:00.000Z'),
+    )
+    const legacyState = { ...currentState, schemaVersion: 1 }
+    const text = JSON.stringify({
+      format: 'fuiki-ijuroku-save',
+      backupVersion: 1,
+      schemaVersion: 1,
+      exportedAt: '2026-07-13T01:00:00.000Z',
+      state: legacyState,
+    })
+
+    const migrated = parseGameBackup(text)
+
+    expect(migrated.schemaVersion).toBe(2)
+    expect(migrated.expedition).toMatchObject({
+      phase: 'idle',
+      currentNodeId: null,
+      firstRecruitmentCompleted: false,
+    })
+  })
+
   it('rejects malformed JSON without changing the current save', () => {
     expect(() => parseGameBackup('{broken')).toThrow('JSONファイルを読み取れませんでした。')
   })
@@ -27,7 +50,7 @@ describe('game backup', () => {
     const malformed = {
       format: 'fuiki-ijuroku-save',
       backupVersion: 1,
-      schemaVersion: 1,
+      schemaVersion: 2,
       exportedAt: new Date().toISOString(),
       state: {
         ...state,
@@ -45,7 +68,7 @@ describe('game backup', () => {
     const malformed = {
       format: 'fuiki-ijuroku-save',
       backupVersion: 1,
-      schemaVersion: 1,
+      schemaVersion: 2,
       exportedAt: new Date().toISOString(),
       state: {
         ...state,
@@ -55,6 +78,21 @@ describe('game backup', () => {
 
     expect(() => parseGameBackup(JSON.stringify(malformed))).toThrow(
       'セーブ内容の検証に失敗しました。',
+    )
+  })
+
+  it('rejects a backup whose outer and inner schema versions disagree', () => {
+    const state = createInitialGameState()
+    const malformed = {
+      format: 'fuiki-ijuroku-save',
+      backupVersion: 1,
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      state,
+    }
+
+    expect(() => parseGameBackup(JSON.stringify(malformed))).toThrow(
+      'バックアップの版情報が一致しません。',
     )
   })
 })

@@ -25,6 +25,28 @@ describe('GameDatabase', () => {
     expect(await database.loadSession()).toEqual(state)
   })
 
+  it('migrates and replaces a schema version 1 session record', async () => {
+    const database = createDatabase()
+    const { expedition: _expedition, ...currentState } = createInitialGameState(
+      new Date('2026-07-13T00:00:00.000Z'),
+    )
+    const legacyState = { ...currentState, schemaVersion: 1 }
+    await database.sessions.put({
+      id: 'active',
+      schemaVersion: 1,
+      revision: legacyState.revision,
+      savedAt: '2026-07-13T01:00:00.000Z',
+      state: legacyState,
+    })
+
+    const migrated = await database.loadSession()
+    const stored = await database.sessions.get('active')
+
+    expect(migrated?.schemaVersion).toBe(2)
+    expect(migrated?.expedition.phase).toBe('idle')
+    expect(stored?.schemaVersion).toBe(2)
+  })
+
   it('does not allow an older revision to overwrite a newer revision', async () => {
     const database = createDatabase()
     const initial = createInitialGameState()

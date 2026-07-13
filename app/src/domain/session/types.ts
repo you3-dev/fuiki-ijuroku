@@ -1,4 +1,6 @@
-export const GAME_SCHEMA_VERSION = 1
+import type { ExpeditionState, ExplorationAction } from '../exploration/types'
+
+export const GAME_SCHEMA_VERSION = 2
 
 export type CreatureSummary = {
   id: string
@@ -47,6 +49,7 @@ export type GameSessionState = {
     reserve: Array<CreatureSummary | null>
   }
   researchUpdates: ResearchUpdate[]
+  expedition: ExpeditionState
   settings: GameSettings
 }
 
@@ -56,4 +59,6 @@ export type GameCommand =
   | { type: 'recordPreparation' }
   | { type: 'acknowledgeUpdate'; updateId: string }
   | { type: 'renamePlayer'; name: string }
+  | { type: 'renameCreature'; creatureId: string; name: string }
   | { type: 'updateSettings'; patch: Partial<GameSettings> }
+  | { type: 'exploration'; action: ExplorationAction }

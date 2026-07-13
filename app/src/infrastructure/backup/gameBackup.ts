@@ -1,5 +1,5 @@
 import { GAME_SCHEMA_VERSION, type GameSessionState } from '../../domain/session/types'
-import { isGameSessionState } from '../../domain/session/validation'
+import { migrateGameSessionState } from '../../domain/session/migrations'
 
 const BACKUP_FORMAT = 'fuiki-ijuroku-save'
 const BACKUP_VERSION = 1
@@ -42,10 +42,22 @@ export function parseGameBackup(text: string): GameSessionState {
   if (backup.format !== BACKUP_FORMAT || backup.backupVersion !== BACKUP_VERSION) {
     throw new Error('対応していないバックアップ形式です。')
   }
-  if (!isGameSessionState(backup.state)) {
+  const rawState = backup.state
+  const rawStateVersion =
+    typeof rawState === 'object' && rawState !== null && !Array.isArray(rawState)
+      ? (rawState as Record<string, unknown>).schemaVersion
+      : undefined
+  if (
+    (backup.schemaVersion !== 1 && backup.schemaVersion !== GAME_SCHEMA_VERSION) ||
+    backup.schemaVersion !== rawStateVersion
+  ) {
+    throw new Error('バックアップの版情報が一致しません。')
+  }
+  const state = migrateGameSessionState(rawState)
+  if (!state) {
     throw new Error('セーブ内容の検証に失敗しました。')
   }
-  return backup.state
+  return state
 }
 
 export function downloadGameBackup(state: GameSessionState): void {

@@ -41,4 +41,95 @@ describe('executeGameCommand', () => {
       initial,
     )
   })
+
+  it('completes the first expedition, recruits into the third front slot, and does not duplicate it', () => {
+    const actions = [
+      { type: 'startExpedition' } as const,
+      { type: 'observeEntrance' } as const,
+      { type: 'enterNode', nodeId: 'graymoss-shallows' } as const,
+      { type: 'battleAction', action: 'observe' } as const,
+      { type: 'battleAction', action: 'defend' } as const,
+      { type: 'battleAction', action: 'cleanse' } as const,
+      { type: 'battleAction', action: 'calm' } as const,
+      { type: 'battleAction', action: 'requestCooperation' } as const,
+    ]
+    const prepared = executeGameCommand(createInitialGameState(), {
+      type: 'recordPreparation',
+    })
+    const recruited = actions.reduce(
+      (state, action) => executeGameCommand(state, { type: 'exploration', action }),
+      prepared,
+    )
+
+    expect(recruited.party.front[2]).toMatchObject({
+      id: 'creature-sumiwatari-tutorial-001',
+      speciesId: 'sumiwatari',
+      displayName: 'スミワタリ',
+    })
+    expect(recruited.party.reserve).toEqual([null, null, null])
+    expect(
+      recruited.researchUpdates.filter(
+        (update) => update.id === 'update-sumiwatari-recruited',
+      ),
+    ).toHaveLength(1)
+
+    const renamed = executeGameCommand(recruited, {
+      type: 'renameCreature',
+      creatureId: 'creature-sumiwatari-tutorial-001',
+      name: '  ミナモ  ',
+    })
+    const returned = executeGameCommand(renamed, {
+      type: 'exploration',
+      action: { type: 'finishRecruitment' },
+    })
+    const restarted = executeGameCommand(
+      executeGameCommand(returned, {
+        type: 'exploration',
+        action: { type: 'returnToLaboratory' },
+      }),
+      { type: 'exploration', action: { type: 'startExpedition' } },
+    )
+
+    expect(renamed.party.front[2]?.displayName).toBe('ミナモ')
+    expect(restarted.expedition.phase).toBe('branch-choice')
+    expect(
+      [...restarted.party.front, ...restarted.party.reserve].filter(
+        (creature) => creature?.id === 'creature-sumiwatari-tutorial-001',
+      ),
+    ).toHaveLength(1)
+  })
+
+  it('does not start the first expedition without preparation and an open third front slot', () => {
+    const initial = createInitialGameState()
+    const withoutPreparation = executeGameCommand(initial, {
+      type: 'exploration',
+      action: { type: 'startExpedition' },
+    })
+    expect(withoutPreparation).toBe(initial)
+
+    const prepared = executeGameCommand(initial, { type: 'recordPreparation' })
+    const fullFront = {
+      ...prepared,
+      party: {
+        ...prepared.party,
+        front: [
+          ...prepared.party.front.slice(0, 2),
+          {
+            id: 'creature-blocking-slot',
+            speciesId: 'other',
+            displayName: '仮個体',
+            level: 1,
+            role: '検証',
+            status: 'ready' as const,
+          },
+        ],
+      },
+    }
+    expect(
+      executeGameCommand(fullFront, {
+        type: 'exploration',
+        action: { type: 'startExpedition' },
+      }),
+    ).toBe(fullFront)
+  })
 })

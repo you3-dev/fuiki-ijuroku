@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useGameSession } from '../../app/GameSessionContext'
 import type { GameCommand } from '../../domain/session/types'
 import type { CreatureSummary } from '../../domain/session/types'
@@ -27,10 +27,16 @@ function CreatureCard({ creature, slot }: { creature: CreatureSummary | null; sl
 
 export function LaboratoryHomePage() {
   const { state, execute } = useGameSession()
+  const navigate = useNavigate()
   if (!state) return null
 
   function runCommand(command: GameCommand) {
     void execute(command).catch(() => undefined)
+  }
+
+  async function startExpedition() {
+    await execute({ type: 'exploration', action: { type: 'startExpedition' } })
+    navigate('/exploration')
   }
 
   const unreadUpdates = state.researchUpdates.filter((update) => !update.acknowledged)
@@ -62,18 +68,21 @@ export function LaboratoryHomePage() {
             <strong>{state.objective.valvesRestored}/{state.objective.valvesTotal}</strong>
           </div>
         </div>
-        <button
-          className="primary-button full-button"
-          type="button"
-          disabled={state.objective.preparationRecorded}
-          onClick={() => runCommand({ type: 'recordPreparation' })}
-        >
-          {state.objective.preparationRecorded
-            ? '調査準備を記録済み'
-            : '調査準備を記録する'}
-        </button>
+        {!state.objective.preparationRecorded ? (
+          <button className="primary-button full-button" type="button" onClick={() => runCommand({ type: 'recordPreparation' })}>
+            調査準備を記録する
+          </button>
+        ) : (
+          <button className="primary-button full-button" type="button" onClick={() => void startExpedition().catch(() => undefined)}>
+            {state.expedition.phase !== 'idle'
+              ? '調査を再開する'
+              : state.expedition.firstRecruitmentCompleted
+                ? '分岐調査へ出発する'
+                : '灰苔湿原へ出発する'}
+          </button>
+        )}
         <p className="helper-text">
-          技術スパイクでは、この操作でIndexedDBへの確定保存を確認します。
+          地点イベントと確定済みラウンドはIndexedDBへ自動保存されます。
         </p>
       </section>
 
