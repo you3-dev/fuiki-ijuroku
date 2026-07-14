@@ -4,6 +4,7 @@ import {
 } from './createInitialExpedition'
 import { createTowerBattleState, updateTowerBattle } from '../battle/towerBattle'
 import { createWaterwayBattleState, updateWaterwayBattle } from '../battle/waterwayBattle'
+import { createCoreBossBattleState, updateCoreBossBattle } from '../battle/coreBossBattle'
 import type {
   ExpeditionState,
   ExplorationAction,
@@ -57,7 +58,7 @@ export function advanceExpedition(
             return {
               expedition: {
                 ...expedition,
-                phase: 'core-preview',
+                phase: expedition.regionCompleted ? 'region-complete' : 'core-preview',
                 currentNodeId: 'purification-core',
                 selectedBranchId: null,
                 unlockedNodeIds: unlock(expedition, ['purification-core']),
@@ -496,6 +497,97 @@ export function advanceExpedition(
         completedGrove: true,
       }
     }
+    case 'beginCoreBattle': {
+      if (
+        expedition.phase !== 'core-preview' ||
+        expedition.currentNodeId !== 'purification-core' ||
+        !expedition.groveCompleted ||
+        expedition.regionCompleted
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'core-battle',
+          coreBossBattle: createCoreBossBattleState(),
+          bossReportChoice: null,
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'coreBossCommand': {
+      if (expedition.phase !== 'core-battle' || !expedition.coreBossBattle) {
+        return unchanged(expedition)
+      }
+      const coreBossBattle = updateCoreBossBattle(
+        expedition.coreBossBattle,
+        action.command,
+      )
+      if (coreBossBattle === expedition.coreBossBattle) return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: coreBossBattle.outcome === 'secured'
+            ? 'core-result'
+            : expedition.phase,
+          coreBossBattle,
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'retryCoreBoss': {
+      if (
+        expedition.phase !== 'core-battle' ||
+        !expedition.coreBossBattle ||
+        !['ecosystem-damaged', 'party-defeated'].includes(
+          expedition.coreBossBattle.outcome,
+        )
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          coreBossBattle: createCoreBossBattleState(),
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'selectBossReport': {
+      if (
+        expedition.phase !== 'core-result' ||
+        !expedition.coreBossBattle ||
+        expedition.coreBossBattle.outcome !== 'secured' ||
+        expedition.bossReportChoice === action.choice
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: { ...expedition, bossReportChoice: action.choice },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'completeRegionReport': {
+      if (
+        expedition.phase !== 'core-result' ||
+        !expedition.coreBossBattle ||
+        expedition.coreBossBattle.outcome !== 'secured' ||
+        !expedition.bossReportChoice
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'region-complete',
+          coreBossBattle: null,
+          regionCompleted: true,
+        },
+        recruitedSumiwatari: false,
+        completedRegion: true,
+      }
+    }
     case 'returnToLaboratory': {
       if (
         expedition.phase === 'battle' ||
@@ -505,6 +597,8 @@ export function advanceExpedition(
         expedition.phase === 'waterway-result' ||
         expedition.phase === 'grove-encounter' ||
         expedition.phase === 'grove-result' ||
+        expedition.phase === 'core-battle' ||
+        expedition.phase === 'core-result' ||
         expedition.phase === 'idle'
       ) {
         return unchanged(expedition)
@@ -518,6 +612,7 @@ export function advanceExpedition(
           towerBattle: null,
           waterwayBattle: null,
           groveEncounter: null,
+          coreBossBattle: null,
         },
         recruitedSumiwatari: false,
       }

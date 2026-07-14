@@ -25,7 +25,7 @@ describe('game backup', () => {
 
     const migrated = parseGameBackup(text)
 
-    expect(migrated.schemaVersion).toBe(5)
+    expect(migrated.schemaVersion).toBe(6)
     expect(migrated.expedition).toMatchObject({
       phase: 'idle',
       currentNodeId: null,
@@ -55,7 +55,7 @@ describe('game backup', () => {
 
     const migrated = parseGameBackup(text)
 
-    expect(migrated.schemaVersion).toBe(5)
+    expect(migrated.schemaVersion).toBe(6)
     expect(migrated.expedition).toMatchObject({
       phase: 'idle',
       towerBattle: null,
@@ -111,6 +111,30 @@ describe('game backup', () => {
     })
   })
 
+  it('migrates a schema version 5 backup by adding core-boss progress', () => {
+    const current = createInitialGameState(new Date('2026-07-13T00:00:00.000Z'))
+    const {
+      coreBossBattle: _coreBossBattle,
+      bossReportChoice: _bossReportChoice,
+      regionCompleted: _regionCompleted,
+      ...legacyExpedition
+    } = current.expedition
+    const legacyState = { ...current, schemaVersion: 5, expedition: legacyExpedition }
+    const text = JSON.stringify({
+      format: 'fuiki-ijuroku-save',
+      backupVersion: 1,
+      schemaVersion: 5,
+      exportedAt: '2026-07-13T01:00:00.000Z',
+      state: legacyState,
+    })
+
+    expect(parseGameBackup(text).expedition).toMatchObject({
+      coreBossBattle: null,
+      bossReportChoice: null,
+      regionCompleted: false,
+    })
+  })
+
   it('rejects malformed JSON without changing the current save', () => {
     expect(() => parseGameBackup('{broken')).toThrow('JSONファイルを読み取れませんでした。')
   })
@@ -128,7 +152,7 @@ describe('game backup', () => {
     const malformed = {
       format: 'fuiki-ijuroku-save',
       backupVersion: 1,
-      schemaVersion: 5,
+      schemaVersion: 6,
       exportedAt: new Date().toISOString(),
       state: {
         ...state,
@@ -146,7 +170,7 @@ describe('game backup', () => {
     const malformed = {
       format: 'fuiki-ijuroku-save',
       backupVersion: 1,
-      schemaVersion: 5,
+      schemaVersion: 6,
       exportedAt: new Date().toISOString(),
       state: {
         ...state,

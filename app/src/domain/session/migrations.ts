@@ -32,6 +32,15 @@ function addGroveState(expedition: Record<string, unknown>) {
   }
 }
 
+function addCoreState(expedition: Record<string, unknown>) {
+  return {
+    ...expedition,
+    coreBossBattle: null,
+    bossReportChoice: null,
+    regionCompleted: false,
+  }
+}
+
 export function migrateGameSessionState(value: unknown): GameSessionState | null {
   if (isGameSessionState(value)) return value
   if (!isRecord(value)) return null
@@ -49,7 +58,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addGroveState(addWaterwayState({
+      expedition: addCoreState(addGroveState(addWaterwayState({
         ...value.expedition,
         phase:
           value.expedition.phase === 'branch-selected' &&
@@ -58,7 +67,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
             : value.expedition.phase,
         towerBattle: null,
         towerCompleted: false,
-      })),
+      }))),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -67,7 +76,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addGroveState(addWaterwayState(value.expedition)),
+      expedition: addCoreState(addGroveState(addWaterwayState(value.expedition))),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -76,7 +85,17 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addGroveState(value.expedition),
+      expedition: addCoreState(addGroveState(value.expedition)),
+    }
+    return isGameSessionState(migrated) ? migrated : null
+  }
+
+
+  if (value.schemaVersion === 5 && isRecord(value.expedition)) {
+    const migrated: unknown = {
+      ...value,
+      schemaVersion: GAME_SCHEMA_VERSION,
+      expedition: addCoreState(value.expedition),
     }
     return isGameSessionState(migrated) ? migrated : null
   }

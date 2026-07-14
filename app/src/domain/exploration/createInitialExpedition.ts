@@ -17,6 +17,9 @@ export function createInitialExpeditionState(): ExpeditionState {
     groveEncounter: null,
     groveCompleted: false,
     relicCatalystObtained: false,
+    coreBossBattle: null,
+    bossReportChoice: null,
+    regionCompleted: false,
   }
 }
 

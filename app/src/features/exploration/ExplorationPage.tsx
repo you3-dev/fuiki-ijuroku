@@ -3,14 +3,40 @@ import { Navigate, useNavigate } from 'react-router'
 import { useGameSession } from '../../app/GameSessionContext'
 import { canRequestCooperation } from '../../domain/exploration/commands'
 import { graymossNodes } from '../../domain/exploration/data'
-import type { ExplorationAction } from '../../domain/exploration/types'
+import type {
+  BossReportChoice,
+  ExplorationAction,
+} from '../../domain/exploration/types'
 import { TowerBattlePanel } from './TowerBattlePanel'
 import { WaterwayBattlePanel } from './WaterwayBattlePanel'
 import { FilterGrovePanel } from './FilterGrovePanel'
+import { CoreBossBattlePanel } from './CoreBossBattlePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
 const KIRIHANE_ID = 'creature-kirihane-tower-001'
 const REKIMATOI_ID = 'creature-rekimatoi-grove-001'
+
+const bossReportOptions: Array<{
+  id: BossReportChoice
+  title: string
+  detail: string
+}> = [
+  {
+    id: 'record-cooperation',
+    title: '異獣との共同作業として記録する',
+    detail: 'ニゴリグイが施設の被害者であり、浄化の担い手でもある点を先頭に置く。',
+  },
+  {
+    id: 'record-facility-risk',
+    title: '施設の危険性を中心に記録する',
+    detail: '閉鎖された排出路が生態系全体を破綻させた危険性を先頭に置く。',
+  },
+  {
+    id: 'record-control-trace',
+    title: '外部からの制御痕跡を中心に記録する',
+    detail: '自然故障ではない停止命令と、兵器化計画の疑いを先頭に置く。',
+  },
+]
 
 function BattlePanel({
   runAction,
@@ -286,6 +312,14 @@ export function ExplorationPage() {
           </section>
         )}
 
+        {expedition.phase === 'core-result' && saveStatus !== 'saved' && (
+          <section className="field-event-card" aria-live="polite">
+            <p className="eyebrow">重要記録</p>
+            <h1>中枢の鎮静結果を保存しています</h1>
+            <p>浄化経路の接続とニゴリグイの生態状態を確定してから、第3記録を開きます。</p>
+          </section>
+        )}
+
         {expedition.phase === 'entrance' && (
           <section className="field-event-card">
             <p className="eyebrow">地点イベント</p>
@@ -553,9 +587,65 @@ export function ExplorationPage() {
             </div>
             <p>巨大な異獣と施設の管路が一体化し、排出できない沈殿物が生命核へ戻り続けています。</p>
             <blockquote>本体を傷つけても、排出できない汚染が戻るだけだ。中央排出路を先に復旧する。</blockquote>
-            <p className="field-note">ニゴリグイの3段階調査戦は、次の実装範囲です。中枢直前の状態は保存されています。</p>
+            <p className="field-note">本体HPを0にすることは正規の解決ではありません。環境装置、排出予告、過負荷と警戒を順に処理します。</p>
+            <button className="primary-button full-button" type="button" onClick={() => void runAction({ type: 'beginCoreBattle' })}>
+              ボス直前を保存して調査を開始する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'core-battle' && (
+          <CoreBossBattlePanel runAction={runAction} />
+        )}
+
+        {expedition.phase === 'core-result' && saveStatus === 'saved' && (
+          <section className="field-event-card core-result-card">
+            <p className="eyebrow">調査成功・先遣隊第3記録</p>
+            <h1>通常回線へ、この記録を流すな</h1>
+            <div className="specimen-orb recruited core-orb" aria-hidden="true">核</div>
+            <p>中央排出路へ澄んだ水が戻り、ニゴリグイの生命核は淡い水色へ落ち着きました。復元された記録には、師匠が次の封鎖地域へ向かったことが残されています。</p>
+            <blockquote>兵器化計画には研究所内部の人物が関係している。収集した記録を通常回線へ送るな。</blockquote>
+            <fieldset className="report-choice-fieldset">
+              <legend>今回の浄化を、どう報告する？</legend>
+              {bossReportOptions.map((option) => (
+                <button
+                  key={option.id}
+                  className={`node-button report-choice ${expedition.bossReportChoice === option.id ? 'selected-report' : ''}`}
+                  type="button"
+                  aria-pressed={expedition.bossReportChoice === option.id}
+                  onClick={() => void runAction({ type: 'selectBossReport', choice: option.id })}
+                >
+                  <strong>{option.title}</strong>
+                  <small>{option.detail}</small>
+                </button>
+              ))}
+            </fieldset>
+            <button
+              className="primary-button full-button"
+              type="button"
+              disabled={!expedition.bossReportChoice}
+              onClick={() => void runAction({ type: 'completeRegionReport' })}
+            >
+              第3記録と地域報告を確定する
+            </button>
+          </section>
+        )}
+
+        {expedition.phase === 'region-complete' && (
+          <section className="field-event-card region-complete-card">
+            <p className="eyebrow">灰苔湿原・地域調査完了</p>
+            <h1>霧の下へ、青緑の流れが戻る</h1>
+            <div className="field-illustration restored-illustration" aria-hidden="true">
+              <span>苔</span><span>澄</span><span>還</span>
+            </div>
+            <p>ニゴリグイは中枢槽へ沈み、通常の濾過行動を再開しました。小型異獣の反応も安定しています。</p>
+            <div className="progress-grid" aria-label="地域完了成果">
+              <div><span>先遣隊記録</span><strong>{state.objective.recordsFound} / {state.objective.recordsTotal}</strong></div>
+              <div><span>水路弁復旧</span><strong>{state.objective.valvesRestored} / {state.objective.valvesTotal}</strong></div>
+              <div><span>異獣録</span><strong>6 / 6</strong></div>
+            </div>
             <button className="primary-button full-button" type="button" onClick={() => void returnToLaboratory()}>
-              研究所へ戻り、最終調査を準備する
+              研究所へ帰還して完了報告を見る
             </button>
           </section>
         )}
@@ -586,6 +676,9 @@ export function ExplorationPage() {
           'grove-result',
           'grove-complete',
           'core-preview',
+          'core-battle',
+          'core-result',
+          'region-complete',
         ].includes(expedition.phase) && (
           <button className="return-button" type="button" onClick={() => void returnToLaboratory()}>
             調査を中断して研究所へ戻る

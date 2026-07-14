@@ -76,7 +76,9 @@ export function LaboratoryHomePage() {
           <button className="primary-button full-button" type="button" onClick={() => void startExpedition().catch(() => undefined)}>
             {state.expedition.phase !== 'idle'
               ? '調査を再開する'
-              : state.expedition.groveCompleted
+              : state.expedition.regionCompleted
+                ? '地域調査完了を確認する'
+                : state.expedition.groveCompleted
                 ? '浄化施設中枢へ向かう'
                 : state.expedition.towerCompleted && state.expedition.waterwayCompleted
                   ? '濾過樹群へ向かう'

@@ -88,6 +88,22 @@ const groveCompletionUpdate: ResearchUpdate = {
   acknowledged: false,
 }
 
+function createRegionCompletionUpdate(
+  choice: NonNullable<GameSessionState['expedition']['bossReportChoice']>,
+): ResearchUpdate {
+  const emphasis = {
+    'record-cooperation': '異獣と施設を共同で浄化した過程を主記録としました。',
+    'record-facility-risk': '古代施設が生態へ与える危険性を主記録としました。',
+    'record-control-trace': '外部制御と兵器化計画の痕跡を主記録としました。',
+  }[choice]
+  return {
+    id: 'update-graymoss-region-completed',
+    title: '灰苔湿原の中枢を鎮静',
+    detail: `先遣隊第3記録を回収し、ニゴリグイの排出経路を復旧しました。${emphasis}`,
+    acknowledged: false,
+  }
+}
+
 export function executeGameCommand(
   state: GameSessionState,
   command: GameCommand,
@@ -298,6 +314,19 @@ export function executeGameCommand(
       if (transition.completedGrove) {
         if (!researchUpdates.some((update) => update.id === groveCompletionUpdate.id)) {
           researchUpdates = [...researchUpdates, groveCompletionUpdate]
+        }
+      }
+      if (transition.completedRegion && transition.expedition.bossReportChoice) {
+        objective = {
+          ...objective,
+          summary: 'ニゴリグイを鎮静し、灰苔湿原の浄化経路を復旧した',
+          recordsFound: objective.recordsTotal,
+        }
+        const regionCompletionUpdate = createRegionCompletionUpdate(
+          transition.expedition.bossReportChoice,
+        )
+        if (!researchUpdates.some((update) => update.id === regionCompletionUpdate.id)) {
+          researchUpdates = [...researchUpdates, regionCompletionUpdate]
         }
       }
 

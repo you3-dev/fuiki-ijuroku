@@ -6,6 +6,7 @@ import type {
   CombatantId,
   WaterwayApproach,
   WaterwayTargetId,
+  CoreBossTargetId,
 } from '../battle/types'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -70,6 +71,9 @@ const EXPEDITION_PHASES: ExpeditionPhase[] = [
   'grove-result',
   'grove-complete',
   'core-preview',
+  'core-battle',
+  'core-result',
+  'region-complete',
 ]
 
 function isRegionNodeId(value: unknown): value is RegionNodeId {
@@ -266,6 +270,112 @@ function isGroveEncounter(value: unknown): boolean {
   return true
 }
 
+const CORE_BOSS_TARGET_IDS: CoreBossTargetId[] = [
+  'nigorigui',
+  'left-pollution-mass',
+  'right-pollution-mass',
+]
+
+function isCoreBossPlan(value: unknown, actorId: AllyCombatantId): boolean {
+  if (!isRecord(value) || !['basic', 'defend', 'skill'].includes(String(value.kind))) {
+    return false
+  }
+  if (value.kind === 'basic') {
+    return CORE_BOSS_TARGET_IDS.includes(value.targetId as CoreBossTargetId)
+  }
+  if (value.kind === 'defend') return value.targetId === actorId
+  if (!isNonEmptyString(value.skillId)) return false
+  const skill = skillDefinitions[value.skillId as keyof typeof skillDefinitions]
+  if (!skill || skill.actorId !== actorId) return false
+  if (value.skillId === 'calming-glimmer') return value.targetId === 'nigorigui'
+  if (value.skillId === 'burrow-guard') {
+    return allyIds.includes(value.targetId as AllyCombatantId) && value.targetId !== actorId
+  }
+  return (
+    allyIds.includes(value.targetId as AllyCombatantId) ||
+    CORE_BOSS_TARGET_IDS.includes(value.targetId as CoreBossTargetId)
+  )
+}
+
+function isCoreBossBattle(value: unknown): boolean {
+  if (!isRecord(value) || value.kind !== 'purification-core') return false
+  if (!['planning', 'committed'].includes(String(value.phase))) return false
+  if (!Number.isInteger(value.round) || Number(value.round) < 1) return false
+  if (!isNonNegativeInteger(value.randomSeed)) return false
+  if (![1, 2, 3].includes(Number(value.stage))) return false
+  if (!isRecord(value.allies)) return false
+  for (const id of allyIds) {
+    const ally = value.allies[id]
+    if (!isRecord(ally) || ally.id !== id) return false
+    if (!isNonNegativeInteger(ally.currentHp) || Number(ally.currentHp) > combatants[id].maxHp) {
+      return false
+    }
+    if (!isNonNegativeInteger(ally.vitality) || Number(ally.vitality) > 100) return false
+    if (!isNonNegativeInteger(ally.pollution) || Number(ally.pollution) > 3) return false
+    if (typeof ally.guarding !== 'boolean') return false
+  }
+  if (!isRecord(value.targets)) return false
+  const maxHp: Record<CoreBossTargetId, number> = {
+    nigorigui: 180,
+    'left-pollution-mass': 35,
+    'right-pollution-mass': 35,
+  }
+  for (const id of CORE_BOSS_TARGET_IDS) {
+    const target = value.targets[id]
+    if (!isRecord(target) || target.id !== id) return false
+    if (!isNonNegativeInteger(target.currentHp) || Number(target.currentHp) > maxHp[id]) {
+      return false
+    }
+    if (typeof target.armored !== 'boolean') return false
+  }
+  if ((value.targets.nigorigui as Record<string, unknown>).armored !== false) return false
+  if (!isRecord(value.plans)) return false
+  if (!allyIds.every((id) => isCoreBossPlan((value.plans as Record<string, unknown>)[id], id))) {
+    return false
+  }
+  if (
+    ![
+      'none', 'observe-outlets', 'rekimatoi-left', 'rekimatoi-right',
+      'analyze-control', 'open-outlet', 'connect-purification',
+    ].includes(String(value.supportPlan))
+  ) {
+    return false
+  }
+  if (typeof value.outletsObserved !== 'boolean') return false
+  if (![0, 1, 2].includes(Number(value.outletProgress))) return false
+  if (typeof value.burstWarned !== 'boolean') return false
+  if (!isNonNegativeInteger(value.overload) || Number(value.overload) > 200) return false
+  if (!isNonNegativeInteger(value.vigilance) || Number(value.vigilance) > 100) return false
+  if (typeof value.calmed !== 'boolean') return false
+  if (
+    !['ongoing', 'secured', 'ecosystem-damaged', 'party-defeated'].includes(
+      String(value.outcome),
+    )
+  ) {
+    return false
+  }
+  const massesRemoved =
+    Number((value.targets['left-pollution-mass'] as Record<string, unknown>).currentHp) === 0 &&
+    Number((value.targets['right-pollution-mass'] as Record<string, unknown>).currentHp) === 0
+  if (Number(value.stage) >= 2 && !massesRemoved) return false
+  if (Number(value.stage) === 1 && Number(value.outletProgress) !== 0) return false
+  if (Number(value.stage) === 2 && Number(value.outletProgress) > 1) return false
+  if (Number(value.stage) === 3 && Number(value.outletProgress) !== 2) return false
+  if (
+    value.outcome === 'secured' &&
+    !(
+      Number(value.stage) === 3 &&
+      Number(value.outletProgress) === 2 &&
+      Number(value.overload) <= 20 &&
+      Number(value.vigilance) <= 20 &&
+      value.calmed === true
+    )
+  ) {
+    return false
+  }
+  return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
+}
+
 function isExpeditionState(value: unknown): boolean {
   if (!isRecord(value)) return false
   if (!EXPEDITION_PHASES.includes(value.phase as ExpeditionPhase)) return false
@@ -279,11 +389,26 @@ function isExpeditionState(value: unknown): boolean {
   if (typeof value.waterwayCompleted !== 'boolean') return false
   if (typeof value.groveCompleted !== 'boolean') return false
   if (typeof value.relicCatalystObtained !== 'boolean') return false
+  if (typeof value.regionCompleted !== 'boolean') return false
+  if (value.coreBossBattle !== null && !isCoreBossBattle(value.coreBossBattle)) {
+    return false
+  }
+  if (
+    value.bossReportChoice !== null &&
+    !['record-cooperation', 'record-facility-risk', 'record-control-trace'].includes(
+      String(value.bossReportChoice),
+    )
+  ) {
+    return false
+  }
   if (value.groveEncounter !== null && !isGroveEncounter(value.groveEncounter)) {
     return false
   }
   if (value.relicCatalystObtained !== value.groveCompleted) return false
   if (value.groveCompleted && (!value.towerCompleted || !value.waterwayCompleted)) {
+    return false
+  }
+  if (value.regionCompleted && (!value.groveCompleted || value.bossReportChoice === null)) {
     return false
   }
   if (
@@ -301,6 +426,10 @@ function isExpeditionState(value: unknown): boolean {
   }
   const activeGrovePhases: ExpeditionPhase[] = ['grove-encounter', 'grove-result']
   if (!activeGrovePhases.includes(value.phase as ExpeditionPhase) && value.groveEncounter !== null) {
+    return false
+  }
+  const activeCorePhases: ExpeditionPhase[] = ['core-battle', 'core-result']
+  if (!activeCorePhases.includes(value.phase as ExpeditionPhase) && value.coreBossBattle !== null) {
     return false
   }
   switch (value.phase) {
@@ -520,12 +649,60 @@ function isExpeditionState(value: unknown): boolean {
         value.waterwayCompleted === true &&
         value.groveCompleted === true &&
         value.relicCatalystObtained === true &&
+        value.regionCompleted === false &&
+        value.bossReportChoice === null &&
         value.currentNodeId === 'purification-core' &&
         value.unlockedNodeIds.includes('purification-core') &&
         value.battle === null &&
         value.towerBattle === null &&
         value.waterwayBattle === null &&
         value.groveEncounter === null
+      )
+    case 'core-battle':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.groveCompleted === true &&
+        value.relicCatalystObtained === true &&
+        value.regionCompleted === false &&
+        value.bossReportChoice === null &&
+        value.currentNodeId === 'purification-core' &&
+        value.unlockedNodeIds.includes('purification-core') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        value.groveEncounter === null &&
+        isCoreBossBattle(value.coreBossBattle) &&
+        (value.coreBossBattle as Record<string, unknown>).outcome !== 'secured'
+      )
+    case 'core-result':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.groveCompleted === true &&
+        value.relicCatalystObtained === true &&
+        value.regionCompleted === false &&
+        value.currentNodeId === 'purification-core' &&
+        value.unlockedNodeIds.includes('purification-core') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        value.groveEncounter === null &&
+        isCoreBossBattle(value.coreBossBattle) &&
+        (value.coreBossBattle as Record<string, unknown>).outcome === 'secured'
+      )
+    case 'region-complete':
+      return (
+        value.firstRecruitmentCompleted === true &&
+        value.groveCompleted === true &&
+        value.relicCatalystObtained === true &&
+        value.regionCompleted === true &&
+        value.bossReportChoice !== null &&
+        value.currentNodeId === 'purification-core' &&
+        value.unlockedNodeIds.includes('purification-core') &&
+        value.battle === null &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null &&
+        value.groveEncounter === null &&
+        value.coreBossBattle === null
       )
     default:
       return false
@@ -601,6 +778,12 @@ export function isGameSessionState(value: unknown): value is GameSessionState {
   const expectsGroveRekimatoi =
     expeditionRecord.phase === 'grove-result' || expeditionRecord.groveCompleted === true
   if (hasGroveRekimatoi !== expectsGroveRekimatoi) return false
+  if (
+    expeditionRecord.regionCompleted === true &&
+    Number(value.objective.recordsFound) !== Number(value.objective.recordsTotal)
+  ) {
+    return false
+  }
   const completedRoutes =
     Number(expeditionRecord.towerCompleted === true) +
     Number(expeditionRecord.waterwayCompleted === true)

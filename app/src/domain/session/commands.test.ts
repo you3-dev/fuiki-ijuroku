@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { executeGameCommand } from './commands'
 import { createInitialGameState } from './createInitialState'
+import type { CoreBossBattleCommand } from '../battle/types'
 
 describe('executeGameCommand', () => {
   it('records preparation and advances the revision once', () => {
@@ -320,5 +321,83 @@ describe('executeGameCommand', () => {
       type: 'exploration', action: { type: 'startExpedition' },
     })
     expect(state.expedition.phase).toBe('core-preview')
+
+    state = executeGameCommand(state, {
+      type: 'exploration', action: { type: 'beginCoreBattle' },
+    })
+    const runBossCommand = (command: CoreBossBattleCommand) => {
+      state = executeGameCommand(state, {
+        type: 'exploration', action: { type: 'coreBossCommand', command },
+      })
+    }
+    const resolveBossRound = () => {
+      runBossCommand({ type: 'commitRound' })
+      runBossCommand({ type: 'resolveRound' })
+    }
+
+    runBossCommand({ type: 'setSupport', support: 'observe-outlets' })
+    resolveBossRound()
+    runBossCommand({ type: 'setSupport', support: 'rekimatoi-left' })
+    runBossCommand({
+      type: 'setPlan', actorId: 'sumiwatari',
+      plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'left-pollution-mass' },
+    })
+    resolveBossRound()
+    runBossCommand({ type: 'setSupport', support: 'rekimatoi-right' })
+    runBossCommand({
+      type: 'setPlan', actorId: 'sumiwatari',
+      plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'right-pollution-mass' },
+    })
+    resolveBossRound()
+    runBossCommand({ type: 'setSupport', support: 'analyze-control' })
+    runBossCommand({
+      type: 'setPlan', actorId: 'sumiwatari',
+      plan: { kind: 'defend', targetId: 'sumiwatari' },
+    })
+    resolveBossRound()
+    runBossCommand({ type: 'setSupport', support: 'open-outlet' })
+    resolveBossRound()
+    runBossCommand({
+      type: 'setPlan', actorId: 'tomoshigoke',
+      plan: { kind: 'skill', skillId: 'calming-glimmer', targetId: 'nigorigui' },
+    })
+    runBossCommand({
+      type: 'setPlan', actorId: 'sumiwatari',
+      plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'nigorigui' },
+    })
+    resolveBossRound()
+    resolveBossRound()
+    resolveBossRound()
+    runBossCommand({
+      type: 'setPlan', actorId: 'tomoshigoke',
+      plan: { kind: 'defend', targetId: 'tomoshigoke' },
+    })
+    runBossCommand({
+      type: 'setPlan', actorId: 'sumiwatari',
+      plan: { kind: 'defend', targetId: 'sumiwatari' },
+    })
+    runBossCommand({ type: 'setSupport', support: 'connect-purification' })
+    resolveBossRound()
+
+    expect(state.expedition.phase).toBe('core-result')
+    state = executeGameCommand(state, {
+      type: 'exploration',
+      action: { type: 'selectBossReport', choice: 'record-control-trace' },
+    })
+    state = executeGameCommand(state, {
+      type: 'exploration', action: { type: 'completeRegionReport' },
+    })
+    expect(state.expedition).toMatchObject({
+      phase: 'region-complete',
+      regionCompleted: true,
+      bossReportChoice: 'record-control-trace',
+    })
+    expect(state.objective.recordsFound).toBe(3)
+    expect(state.objective.valvesRestored).toBe(2)
+    expect(
+      state.researchUpdates.filter(
+        (update) => update.id === 'update-graymoss-region-completed',
+      ),
+    ).toHaveLength(1)
   })
 })

@@ -100,3 +100,66 @@ export type WaterwayBattleCommand =
     }
   | { type: 'commitRound' }
   | { type: 'resolveRound' }
+
+export type CoreBossTargetId =
+  | 'nigorigui'
+  | 'left-pollution-mass'
+  | 'right-pollution-mass'
+
+export type CoreBossPlanTargetId = AllyCombatantId | CoreBossTargetId
+
+export type CoreBossPlannedAction =
+  | { kind: 'basic'; targetId: CoreBossTargetId }
+  | { kind: 'defend'; targetId: AllyCombatantId }
+  | { kind: 'skill'; skillId: BattleSkillId; targetId: CoreBossPlanTargetId }
+
+export type CoreBossSupport =
+  | 'none'
+  | 'observe-outlets'
+  | 'rekimatoi-left'
+  | 'rekimatoi-right'
+  | 'analyze-control'
+  | 'open-outlet'
+  | 'connect-purification'
+
+export type CoreBossTargetState = {
+  id: CoreBossTargetId
+  currentHp: number
+  armored: boolean
+}
+
+export type CoreBossBattleOutcome =
+  | 'ongoing'
+  | 'secured'
+  | 'ecosystem-damaged'
+  | 'party-defeated'
+
+export type CoreBossBattleState = {
+  kind: 'purification-core'
+  phase: 'planning' | 'committed'
+  round: number
+  randomSeed: number
+  stage: 1 | 2 | 3
+  allies: Record<AllyCombatantId, CombatantState & { pollution: number }>
+  targets: Record<CoreBossTargetId, CoreBossTargetState>
+  plans: Record<AllyCombatantId, CoreBossPlannedAction>
+  supportPlan: CoreBossSupport
+  outletsObserved: boolean
+  outletProgress: 0 | 1 | 2
+  burstWarned: boolean
+  overload: number
+  vigilance: number
+  calmed: boolean
+  outcome: CoreBossBattleOutcome
+  lastLog: string[]
+}
+
+export type CoreBossBattleCommand =
+  | { type: 'setSupport'; support: CoreBossSupport }
+  | {
+      type: 'setPlan'
+      actorId: AllyCombatantId
+      plan: CoreBossPlannedAction
+    }
+  | { type: 'commitRound' }
+  | { type: 'resolveRound' }

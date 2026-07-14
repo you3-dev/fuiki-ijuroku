@@ -27,6 +27,9 @@ export type ExpeditionPhase =
   | 'grove-result'
   | 'grove-complete'
   | 'core-preview'
+  | 'core-battle'
+  | 'core-result'
+  | 'region-complete'
 
 export type TutorialBattleState = {
   round: number
@@ -59,6 +62,11 @@ export type GroveEncounterState = {
     | 'shell-damaged'
 }
 
+export type BossReportChoice =
+  | 'record-cooperation'
+  | 'record-facility-risk'
+  | 'record-control-trace'
+
 export type ExpeditionState = {
   phase: ExpeditionPhase
   currentNodeId: RegionNodeId | null
@@ -75,6 +83,9 @@ export type ExpeditionState = {
   groveEncounter: GroveEncounterState | null
   groveCompleted: boolean
   relicCatalystObtained: boolean
+  coreBossBattle: CoreBossBattleState | null
+  bossReportChoice: BossReportChoice | null
+  regionCompleted: boolean
 }
 
 export type ExplorationAction =
@@ -106,6 +117,11 @@ export type ExplorationAction =
     }
   | { type: 'retryGroveEncounter' }
   | { type: 'completeGroveSurvey' }
+  | { type: 'beginCoreBattle' }
+  | { type: 'coreBossCommand'; command: CoreBossBattleCommand }
+  | { type: 'retryCoreBoss' }
+  | { type: 'selectBossReport'; choice: BossReportChoice }
+  | { type: 'completeRegionReport' }
   | { type: 'returnToLaboratory' }
 
 export type ExplorationTransition = {
@@ -116,6 +132,7 @@ export type ExplorationTransition = {
   completedWaterway?: boolean
   recruitedRekimatoi?: boolean
   completedGrove?: boolean
+  completedRegion?: boolean
 }
 import type {
   BattleCommand,
@@ -123,4 +140,6 @@ import type {
   WaterwayApproach,
   WaterwayBattleCommand,
   WaterwayBattleState,
+  CoreBossBattleCommand,
+  CoreBossBattleState,
 } from '../battle/types'
