@@ -6,6 +6,7 @@ import type {
   CoreBossSupport,
 } from './types'
 import {
+  CORE_BOSS_OVERLOAD_LIMIT,
   canConnectPurification,
   createCoreBossBattleState,
   updateCoreBossBattle,
@@ -157,6 +158,65 @@ describe('purification core boss battle', () => {
 
     expect(battle.outcome).toBe('party-defeated')
   })
+
+  it('ends in ecosystem damage when pollution raises overload to its limit', () => {
+    let battle = createCoreBossBattleState()
+    battle = {
+      ...battle,
+      overload: CORE_BOSS_OVERLOAD_LIMIT - 20,
+    }
+
+    battle = resolve(defendAll(battle))
+
+    expect(battle.overload).toBe(CORE_BOSS_OVERLOAD_LIMIT)
+    expect(battle.outcome).toBe('ecosystem-damaged')
+    expect(battle.lastLog).toContain(
+      '施設の過負荷が許容上限に達し、生態保全経路を維持できません。',
+    )
+  })
+
+  it.each([
+    {
+      actorId: 'sumiwatari' as const,
+      round: 2,
+      overload: 50,
+      vigilance: 20,
+      calmed: true,
+      expectedLog: 'スミワタリが行動不能となり、残る過負荷を下げられません。調査失敗・緊急帰還です。',
+    },
+    {
+      actorId: 'tomoshigoke' as const,
+      round: 1,
+      overload: 20,
+      vigilance: 40,
+      calmed: false,
+      expectedLog: 'トモシゴケが行動不能となり、ニゴリグイの鎮静を完了できません。調査失敗・緊急帰還です。',
+    },
+  ])(
+    'ends the attempt immediately when $actorId falls with a required condition unmet',
+    ({ actorId, round, overload, vigilance, calmed, expectedLog }) => {
+      let battle = createCoreBossBattleState()
+      battle = {
+        ...battle,
+        stage: 3,
+        outletProgress: 2,
+        round,
+        overload,
+        vigilance,
+        calmed,
+        allies: {
+          ...battle.allies,
+          [actorId]: { ...battle.allies[actorId], currentHp: 1 },
+        },
+      }
+
+      battle = resolve(defendAll(battle))
+
+      expect(battle.allies[actorId].currentHp).toBe(0)
+      expect(battle.outcome).toBe('party-defeated')
+      expect(battle.lastLog).toContain(expectedLog)
+    },
+  )
 
   it('stores the deterministic seed and never resolves a committed round twice', () => {
     const initial = createCoreBossBattleState()

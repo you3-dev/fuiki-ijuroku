@@ -128,8 +128,8 @@ export function CoreBossBattlePanel({
         <p className="eyebrow">調査失敗・ボス直前チェックポイント</p>
         <h1>
           {battle.outcome === 'ecosystem-damaged'
-            ? 'ニゴリグイの生命核を損傷した'
-            : '前衛が中枢の濁流に倒れた'}
+            ? '中枢の生態保全経路を失った'
+            : '浄化調査の継続が不可能になった'}
         </h1>
         <p>上下流弁、濾過樹群、仲間、遺跡触媒は保持し、中枢へ入った直後から再試行します。</p>
         <ul className="battle-log">

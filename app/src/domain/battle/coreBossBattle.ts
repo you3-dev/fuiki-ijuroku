@@ -21,6 +21,8 @@ export const coreBossTargetMaxHp: Record<CoreBossTargetId, number> = {
   'right-pollution-mass': 35,
 }
 
+export const CORE_BOSS_OVERLOAD_LIMIT = 200
+
 const pollutionMassIds = [
   'left-pollution-mass',
   'right-pollution-mass',
@@ -243,7 +245,10 @@ function applyBasicAttack(
 function applyPollutionMasses(state: CoreBossBattleState, log: string[]) {
   const remaining = pollutionMassIds.filter((id) => state.targets[id].currentHp > 0).length
   if (remaining === 0) return
-  state.overload = Math.min(200, state.overload + remaining * 10)
+  state.overload = Math.min(
+    CORE_BOSS_OVERLOAD_LIMIT,
+    state.overload + remaining * 10,
+  )
   for (const allyId of allyIds) {
     const ally = state.allies[allyId]
     if (ally.currentHp <= 0) continue
@@ -251,6 +256,34 @@ function applyPollutionMasses(state: CoreBossBattleState, log: string[]) {
     ally.vitality = Math.max(0, ally.vitality - remaining * 5)
   }
   log.push(`残った汚染塊${remaining}個が汚染を散布し、過負荷値が${remaining * 10}上昇しました。`)
+}
+
+function failWhenPurificationIsImpossible(
+  state: CoreBossBattleState,
+  log: string[],
+): boolean {
+  if (state.stage !== 3) return false
+
+  if (state.overload > 20 && state.allies.sumiwatari.currentHp <= 0) {
+    state.outcome = 'party-defeated'
+    log.push(
+      'スミワタリが行動不能となり、残る過負荷を下げられません。調査失敗・緊急帰還です。',
+    )
+    return true
+  }
+
+  if (
+    (state.vigilance > 20 || !state.calmed) &&
+    state.allies.tomoshigoke.currentHp <= 0
+  ) {
+    state.outcome = 'party-defeated'
+    log.push(
+      'トモシゴケが行動不能となり、ニゴリグイの鎮静を完了できません。調査失敗・緊急帰還です。',
+    )
+    return true
+  }
+
+  return false
 }
 
 function applyBossAction(
@@ -359,6 +392,11 @@ function resolveRound(state: CoreBossBattleState): CoreBossBattleState {
 
   if (next.stage === 1) {
     applyPollutionMasses(next, log)
+    if (next.overload >= CORE_BOSS_OVERLOAD_LIMIT) {
+      next.outcome = 'ecosystem-damaged'
+      log.push('施設の過負荷が許容上限に達し、生態保全経路を維持できません。')
+      return next
+    }
     if (pollutionMassIds.every((id) => next.targets[id].currentHp <= 0)) {
       next.stage = 2
       log.push('左右の汚染塊を除去しました。中央排出路の制御盤を操作できます。')
@@ -375,6 +413,8 @@ function resolveRound(state: CoreBossBattleState): CoreBossBattleState {
     log.push('前衛がすべて戦闘不能になりました。調査失敗・緊急帰還です。')
     return next
   }
+
+  if (failWhenPurificationIsImpossible(next, log)) return next
 
   next.round += 1
   next.supportPlan = 'none'

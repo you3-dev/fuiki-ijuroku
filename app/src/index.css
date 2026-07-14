@@ -802,6 +802,13 @@ p {
   margin-bottom: 0.65rem;
 }
 
+@media (max-width: 699px) {
+  .update-toast {
+    top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    bottom: auto;
+  }
+}
+
 .expedition-shell {
   width: min(100%, 46rem);
   min-height: 100vh;
