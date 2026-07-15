@@ -3,6 +3,8 @@ import { Navigate, Route, Routes } from 'react-router'
 import { BestiaryPage } from '../features/bestiary/BestiaryPage'
 import { ExplorationPage } from '../features/exploration/ExplorationPage'
 import { LaboratoryHomePage } from '../features/laboratory/LaboratoryHomePage'
+import { ProloguePage } from '../features/onboarding/ProloguePage'
+import { TitlePage } from '../features/onboarding/TitlePage'
 import { PartyPage } from '../features/party/PartyPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { AppShell } from './AppShell'
@@ -67,6 +69,8 @@ export function AppRouter() {
 
   return (
     <Routes>
+      <Route index element={<TitlePage />} />
+      <Route path="prologue" element={<ProloguePage />} />
       <Route path="exploration" element={<ExplorationPage />} />
       <Route
         element={
@@ -75,7 +79,6 @@ export function AppRouter() {
             : <AppShell />
         }
       >
-        <Route index element={<Navigate to="/laboratory" replace />} />
         <Route path="laboratory" element={<LaboratoryHomePage />} />
         <Route path="party" element={<PartyPage />} />
         <Route path="bestiary" element={<BestiaryPage />} />

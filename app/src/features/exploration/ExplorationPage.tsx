@@ -48,6 +48,40 @@ function BattlePanel({
   if (!battle) return null
 
   const cooperationReady = canRequestCooperation(battle)
+  const tutorialStep = !battle.observed
+    ? {
+        number: 1,
+        action: 'observe',
+        title: '苦しむ原因を観察する',
+        detail: '攻撃する前に、体表と行動の変化を調べます。',
+      }
+    : !battle.pressureDefended
+      ? {
+          number: 2,
+          action: 'defend',
+          title: '濁り水圧から調査隊を守る',
+          detail: 'ヌマクグリの防御で、安全な処置の時間を作ります。',
+        }
+      : battle.polluted
+        ? {
+            number: 3,
+            action: 'cleanse',
+            title: '濾過膜の汚染を取り除く',
+            detail: '観察で見つけた詰まりへ、汚染除去具を使います。',
+          }
+        : !battle.calmed
+          ? {
+              number: 4,
+              action: 'calm',
+              title: '光の周期を合わせて鎮める',
+              detail: 'トモシゴケの明滅で、敵意がないことを伝えます。',
+            }
+          : {
+              number: 5,
+              action: 'cooperate',
+              title: '傷つけずに協力を求める',
+              detail: '生態条件が整いました。調査隊へ迎えられます。',
+            }
   const messages = {
     encountered: '黒い濁りをまとった異獣が、濾過膜を地面へ擦りつけています。',
     observed: '濾過膜の内側に汚染が詰まっています。濁り水圧の予兆を確認しました。',
@@ -68,7 +102,24 @@ function BattlePanel({
         </div>
       </div>
 
+      <figure className={`encounter-visual ${battle.polluted ? 'is-polluted' : 'is-cleansed'}`}>
+        <img
+          src={`${import.meta.env.BASE_URL}art/${battle.polluted ? 'sumiwatari-encounter.webp' : 'sumiwatari-cleansed.webp'}`}
+          alt={battle.polluted ? '黒い沈殿物に覆われ苦しむスミワタリ' : '汚染が取れ生命核の光を取り戻したスミワタリ'}
+        />
+        <figcaption>{battle.polluted ? '汚染反応・警戒中' : '汚染反応・解除'}</figcaption>
+      </figure>
+
       <p className="encounter-message" role="status">{messages[battle.lastAction]}</p>
+
+      <section className="next-action-panel" aria-label="次にすること">
+        <span>{tutorialStep.number}/5</span>
+        <div>
+          <small>次にすること</small>
+          <strong>{tutorialStep.title}</strong>
+          <p>{tutorialStep.detail}</p>
+        </div>
+      </section>
 
       <div className="battle-meters">
         <div>
@@ -83,15 +134,17 @@ function BattlePanel({
       </div>
 
       <div className="condition-strip" aria-label="協力条件">
-        <span className={battle.observed ? 'condition-met' : ''}>観察</span>
-        <span className={!battle.polluted ? 'condition-met' : ''}>汚染解除</span>
-        <span className={battle.vigilance <= 20 ? 'condition-met' : ''}>警戒20以下</span>
-        <span className={battle.calmed ? 'condition-met' : ''}>鎮静</span>
+        <span className={battle.observed ? 'condition-met' : ''}><b>{battle.observed ? '✓' : '1'}</b>観察</span>
+        <span className={battle.pressureDefended ? 'condition-met' : ''}><b>{battle.pressureDefended ? '✓' : '2'}</b>防御</span>
+        <span className={!battle.polluted ? 'condition-met' : ''}><b>{!battle.polluted ? '✓' : '3'}</b>浄化</span>
+        <span className={battle.calmed ? 'condition-met' : ''}><b>{battle.calmed ? '✓' : '4'}</b>鎮静</span>
       </div>
 
       <div className="battle-actions">
         <button
+          className={tutorialStep.action === 'observe' ? 'recommended-action' : undefined}
           type="button"
+          aria-current={tutorialStep.action === 'observe' ? 'step' : undefined}
           disabled={battle.observed}
           onClick={() => void runAction({ type: 'battleAction', action: 'observe' })}
         >
@@ -99,7 +152,9 @@ function BattlePanel({
           <small>濾過器官と危険行動の原因を調べる</small>
         </button>
         <button
+          className={tutorialStep.action === 'defend' ? 'recommended-action' : undefined}
           type="button"
+          aria-current={tutorialStep.action === 'defend' ? 'step' : undefined}
           disabled={!battle.observed || battle.pressureDefended}
           onClick={() => void runAction({ type: 'battleAction', action: 'defend' })}
         >
@@ -107,7 +162,9 @@ function BattlePanel({
           <small>予告された濁り水圧を受け止める</small>
         </button>
         <button
+          className={tutorialStep.action === 'cleanse' ? 'recommended-action' : undefined}
           type="button"
+          aria-current={tutorialStep.action === 'cleanse' ? 'step' : undefined}
           disabled={!battle.pressureDefended || !battle.polluted}
           onClick={() => void runAction({ type: 'battleAction', action: 'cleanse' })}
         >
@@ -115,7 +172,9 @@ function BattlePanel({
           <small>残り{battle.cleanserCount}個・汚染解除、警戒度−20</small>
         </button>
         <button
+          className={tutorialStep.action === 'calm' ? 'recommended-action' : undefined}
           type="button"
+          aria-current={tutorialStep.action === 'calm' ? 'step' : undefined}
           disabled={battle.polluted || battle.calmed}
           onClick={() => void runAction({ type: 'battleAction', action: 'calm' })}
         >
@@ -123,8 +182,9 @@ function BattlePanel({
           <small>鎮静を付与し、警戒度−20</small>
         </button>
         <button
-          className="cooperation-action"
+          className={`cooperation-action ${tutorialStep.action === 'cooperate' ? 'recommended-action' : ''}`}
           type="button"
+          aria-current={tutorialStep.action === 'cooperate' ? 'step' : undefined}
           disabled={!cooperationReady}
           onClick={() => void runAction({ type: 'battleAction', action: 'requestCooperation' })}
         >
@@ -322,28 +382,36 @@ export function ExplorationPage() {
 
         {expedition.phase === 'entrance' && (
           <section className="field-event-card">
-            <p className="eyebrow">地点イベント</p>
-            <h1>水へ触れる前に</h1>
-            <div className="field-illustration entrance-illustration" aria-hidden="true">
-              <span>灰</span><span>苔</span><span>水</span>
-            </div>
+            <div className="field-goal"><span>現在の目的</span><strong>灰色へ変わった苔を調べる</strong></div>
+            <p className="eyebrow">灰苔湿原・入口</p>
+            <h1>水へ触れる前に、生物を見る</h1>
+            <figure className="field-scene">
+              <img src={`${import.meta.env.BASE_URL}art/title-graymoss.webp`} alt="古代施設の管路が沈む灰苔湿原" />
+              <figcaption>GM-01 灰苔湿原・封鎖区域</figcaption>
+            </figure>
             <p>主人公が採水しようとすると、トモシゴケの発光苔が青緑から灰色へ変わりました。</p>
             <blockquote>生物の反応を先に見る。記録は、その後に結論を出すためにある。</blockquote>
             <button className="primary-button full-button" type="button" onClick={() => void runAction({ type: 'observeEntrance' })}>
-              生物の反応を観察する
+              トモシゴケの反応を観察する
             </button>
           </section>
         )}
 
         {expedition.phase === 'node-choice' && (
           <section className="field-event-card">
-            <p className="eyebrow">地点選択</p>
-            <h1>次の調査地点</h1>
-            <p>水そのものより、混じった遺跡波動が異獣へ影響しています。浅瀬から停止した流れを追えます。</p>
+            <div className="field-goal"><span>現在の目的</span><strong>異常反応の発生源へ進む</strong></div>
+            <p className="eyebrow">調査経路</p>
+            <h1>灰苔の浅瀬へ</h1>
+            <div className="route-map" aria-label="入口から浅瀬までの経路">
+              <span className="route-node completed">入口<small>観察済み</small></span>
+              <span className="route-line" aria-hidden="true" />
+              <span className="route-node current">浅瀬<small>異獣反応</small></span>
+            </div>
+            <p>水そのものではなく、混じった遺跡波動が異獣へ影響しています。反応の強い浅瀬へ向かいます。</p>
             <button className="node-button" type="button" onClick={() => void runAction({ type: 'enterNode', nodeId: 'graymoss-shallows' })}>
               <span className="specimen-tag">GM-02</span>
-              <strong>灰苔の浅瀬</strong>
-              <small>{graymossNodes['graymoss-shallows'].summary}</small>
+              <strong>灰苔の浅瀬へ進む</strong>
+              <small>異獣反応あり・初回接触調査</small>
             </button>
           </section>
         )}
@@ -412,10 +480,17 @@ export function ExplorationPage() {
 
         {expedition.phase === 'recruit-result' && saveStatus === 'saved' && (
           <section className="field-event-card recruit-card">
-            <p className="eyebrow">協力成立</p>
-            <h1>濁りの奥に澄んだ核</h1>
-            <div className="specimen-orb recruited" aria-hidden="true">澄</div>
-            <p>スミワタリは攻撃をやめ、トモシゴケの光を追って前衛の空き枠へ入りました。</p>
+            <p className="eyebrow">協力成立・新しい仲間</p>
+            <h1>スミワタリが調査隊に加わった</h1>
+            <figure className="recruit-visual">
+              <img src={`${import.meta.env.BASE_URL}art/sumiwatari-cleansed.webp`} alt="生命核の光を取り戻したスミワタリ" />
+              <figcaption>汚染濾過・水路浄化個体</figcaption>
+            </figure>
+            <div className="party-joined" aria-label="前衛3体が揃いました">
+              <span>トモシゴケ</span><span>ヌマクグリ</span><span className="new-member">スミワタリ<small>NEW</small></span>
+            </div>
+            <div className="skill-unlock"><span>技能解放</span><strong>澄み流し</strong><small>汚染を取り除き、仲間の状態を整える</small></div>
+            <p>スミワタリはトモシゴケの光を追い、前衛の空き枠へ入りました。</p>
             <label htmlFor="creature-nickname">記録する呼称</label>
             <input
               id="creature-nickname"
@@ -424,7 +499,7 @@ export function ExplorationPage() {
               onChange={(event) => setNickname(event.target.value)}
             />
             <button className="primary-button full-button" type="button" disabled={!nickname.trim()} onClick={() => void finishRecruitment()}>
-              呼称を保存して分岐を確認
+              スミワタリと調査を続ける
             </button>
           </section>
         )}

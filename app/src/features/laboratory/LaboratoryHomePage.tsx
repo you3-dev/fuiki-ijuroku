@@ -40,16 +40,32 @@ export function LaboratoryHomePage() {
   }
 
   const unreadUpdates = state.researchUpdates.filter((update) => !update.acknowledged)
+  const isBeforeFirstRecruit = !state.expedition.firstRecruitmentCompleted
+  const isFirstBriefing = isBeforeFirstRecruit && !state.objective.preparationRecorded
 
   return (
     <div className="page-stack">
-      <section className="page-intro">
-        <p className="eyebrow">調査員 {state.profile.name}</p>
-        <h2>辺境研究所</h2>
-        <p>生物の反応を先に見る。記録は、その後に結論を出すためにある。</p>
+      <section className={`page-intro ${isBeforeFirstRecruit ? 'briefing-intro' : ''}`}>
+        <p className="eyebrow">調査員 {state.profile.name}・最初の任務</p>
+        <h2>{isBeforeFirstRecruit ? '出発前ブリーフィング' : '辺境研究所'}</h2>
+        <p>
+          {isBeforeFirstRecruit
+            ? '目的は二つ。異獣の異常を確かめ、先遣隊の記録を持ち帰る。'
+            : '生物の反応を先に見る。記録は、その後に結論を出すためにある。'}
+        </p>
       </section>
 
-      <section className="paper-card objective-card" aria-labelledby="current-objective">
+      {isBeforeFirstRecruit && (
+        <section className="mission-guide" aria-label="次にすること">
+          <span className="guide-step">{isFirstBriefing ? '1' : '2'}</span>
+          <div>
+            <small>次にすること</small>
+            <strong>{isFirstBriefing ? '同行する異獣を確認する' : '灰苔湿原へ出発する'}</strong>
+          </div>
+        </section>
+      )}
+
+      <section className={`paper-card objective-card ${isBeforeFirstRecruit ? 'tutorial-focus' : ''}`} aria-labelledby="current-objective">
         <div className="card-heading-row">
           <div>
             <p className="card-kicker">現在の調査</p>
@@ -70,7 +86,7 @@ export function LaboratoryHomePage() {
         </div>
         {!state.objective.preparationRecorded ? (
           <button className="primary-button full-button" type="button" onClick={() => runCommand({ type: 'recordPreparation' })}>
-            調査準備を記録する
+            同行個体を確認する
           </button>
         ) : (
           <button className="primary-button full-button" type="button" onClick={() => void startExpedition().catch(() => undefined)}>
@@ -87,9 +103,11 @@ export function LaboratoryHomePage() {
                 : '灰苔湿原へ出発する'}
           </button>
         )}
-        <p className="helper-text">
-          地点イベントと確定済みラウンドはIndexedDBへ自動保存されます。
-        </p>
+        {!isBeforeFirstRecruit && (
+          <p className="helper-text">
+            地点イベントと確定済みラウンドはIndexedDBへ自動保存されます。
+          </p>
+        )}
       </section>
 
       <section className="paper-card" aria-labelledby="party-summary">
@@ -105,10 +123,14 @@ export function LaboratoryHomePage() {
             <CreatureCard key={creature?.id ?? `front-${index}`} creature={creature} slot={index + 1} />
           ))}
         </ul>
-        <p className="field-note">前衛は最大3体。灰苔の浅瀬で最初の協力要請を行います。</p>
+        <p className="field-note">
+          {isBeforeFirstRecruit
+            ? 'トモシゴケは鎮静、ヌマクグリは防御を担当します。空き枠には調査中に協力を得た異獣が入ります。'
+            : '前衛は最大3体。役割を組み合わせて異獣と接触します。'}
+        </p>
       </section>
 
-      <section className="paper-card" aria-labelledby="research-updates">
+      {!isBeforeFirstRecruit && <section className="paper-card" aria-labelledby="research-updates">
         <div className="card-heading-row">
           <div>
             <p className="card-kicker">研究報告</p>
@@ -137,9 +159,9 @@ export function LaboratoryHomePage() {
         ) : (
           <p className="empty-message">未確認の研究報告はありません。</p>
         )}
-      </section>
+      </section>}
 
-      <section className="paper-card" aria-labelledby="facilities">
+      {!isBeforeFirstRecruit && <section className="paper-card" aria-labelledby="facilities">
         <p className="card-kicker">研究設備</p>
         <h3 id="facilities">利用可能な設備</h3>
         <div className="facility-grid">
@@ -154,7 +176,7 @@ export function LaboratoryHomePage() {
             <small>バックアップと表示設定</small>
           </Link>
         </div>
-      </section>
+      </section>}
     </div>
   )
 }
