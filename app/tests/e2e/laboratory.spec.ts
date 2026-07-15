@@ -17,4 +17,10 @@ test('loads the laboratory and persists the player name', async ({ page }) => {
   await page.reload()
   await page.getByRole('link', { name: '研究所へ戻る' }).click()
   await expect(page.getByText('調査員 試験調査員')).toBeVisible()
+
+  await page.goto('/#/settings')
+  await page.getByRole('button', { name: '新しい記録で始める' }).click()
+  await page.getByRole('button', { name: '初期化してタイトルへ' }).click()
+  await expect(page.getByRole('heading', { name: '封域異獣録' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /調査を始める/ })).toBeVisible()
 })

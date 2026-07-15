@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useGameSession } from '../../app/GameSessionContext'
 import {
   downloadGameBackup,
@@ -7,9 +7,11 @@ import {
 } from '../../infrastructure/backup/gameBackup'
 
 export function SettingsPage() {
-  const { state, execute, restore, saveStatus, retrySave } = useGameSession()
+  const { state, execute, restore, resetSession, saveStatus, retrySave } = useGameSession()
+  const navigate = useNavigate()
   const [name, setName] = useState(state?.profile.name ?? '')
   const [message, setMessage] = useState<string | null>(null)
+  const [confirmNewRecord, setConfirmNewRecord] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -43,6 +45,11 @@ export function SettingsPage() {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '復元に失敗しました。')
     }
+  }
+
+  async function handleNewRecord() {
+    await resetSession()
+    navigate('/', { replace: true })
   }
 
   return (
@@ -129,6 +136,37 @@ export function SettingsPage() {
             onChange={(event) => void handleImport(event)}
           />
         </div>
+      </section>
+
+      <section className="paper-card danger-card" aria-labelledby="new-record-title">
+        <p className="card-kicker">新しい調査</p>
+        <h3 id="new-record-title">最初から始める</h3>
+        {!confirmNewRecord ? (
+          <>
+            <p className="helper-text">
+              先にJSONを書き出しておくと、現在の調査記録はあとで復元できます。
+            </p>
+            <button
+              className="danger-button"
+              type="button"
+              onClick={() => setConfirmNewRecord(true)}
+            >
+              新しい記録で始める
+            </button>
+          </>
+        ) : (
+          <div className="new-record-confirmation">
+            <p>端末内の現在のセーブを初期状態で置き換えます。この操作は元に戻せません。</p>
+            <div className="button-row">
+              <button className="danger-button" type="button" onClick={() => void handleNewRecord()}>
+                初期化してタイトルへ
+              </button>
+              <button className="secondary-button" type="button" onClick={() => setConfirmNewRecord(false)}>
+                やめる
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {saveStatus === 'failed' && (

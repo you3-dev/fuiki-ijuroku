@@ -69,7 +69,7 @@ export function AppRouter() {
 
   return (
     <Routes>
-      <Route index element={<TitlePage />} />
+      <Route path="/" element={<TitlePage />} />
       <Route path="prologue" element={<ProloguePage />} />
       <Route path="exploration" element={<ExplorationPage />} />
       <Route

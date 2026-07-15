@@ -722,6 +722,17 @@ p {
   background: rgb(112 192 180 / 14%);
 }
 
+.new-record-confirmation {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.new-record-confirmation p {
+  margin: 0;
+  color: #704239;
+  font-size: 0.82rem;
+}
+
 .tab-bar {
   position: fixed;
   z-index: 30;
