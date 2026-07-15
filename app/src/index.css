@@ -171,6 +171,31 @@ p {
   gap: 0.3rem;
 }
 
+.header-settings,
+.expedition-settings,
+.title-settings {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border: 1px solid rgb(244 239 223 / 38%);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  color: var(--color-paper-raised);
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-decoration: none;
+  background: rgb(0 0 0 / 18%);
+}
+
+.header-settings span:first-child,
+.expedition-settings span:first-child,
+.title-settings span:first-child {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .status-badge {
   display: inline-flex;
   min-height: 1.55rem;
@@ -834,6 +859,16 @@ p {
   z-index: 1;
 }
 
+.title-settings {
+  position: absolute;
+  z-index: 2;
+  top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.55rem));
+  right: 1rem;
+  border-color: rgb(112 192 180 / 58%);
+  color: #d7ebe3;
+  background: rgb(12 22 22 / 58%);
+}
+
 .title-content {
   display: grid;
   justify-items: center;
@@ -1115,6 +1150,13 @@ p {
 
 .expedition-header strong {
   letter-spacing: 0.06em;
+}
+
+.expedition-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .expedition-content {

@@ -72,6 +72,9 @@ export function AppRouter() {
       <Route path="/" element={<TitlePage />} />
       <Route path="prologue" element={<ProloguePage />} />
       <Route path="exploration" element={<ExplorationPage />} />
+      <Route element={<AppShell />}>
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
       <Route
         element={
           explorationLocked
@@ -82,7 +85,6 @@ export function AppRouter() {
         <Route path="laboratory" element={<LaboratoryHomePage />} />
         <Route path="party" element={<PartyPage />} />
         <Route path="bestiary" element={<BestiaryPage />} />
-        <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/laboratory" replace />} />
       </Route>
     </Routes>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { useGameSession } from '../../app/GameSessionContext'
 import { canRequestCooperation } from '../../domain/exploration/commands'
 import { graymossNodes } from '../../domain/exploration/data'
@@ -324,7 +324,13 @@ export function ExplorationPage() {
           <p>灰苔湿原・{currentNode.code}</p>
           <strong>{currentNode.name}</strong>
         </div>
-        <span className={`status-badge status-${saveStatus}`}>{saveLabel}</span>
+        <div className="expedition-header-actions">
+          <span className={`status-badge status-${saveStatus}`}>{saveLabel}</span>
+          <Link className="expedition-settings" to="/settings" aria-label="設定・保存を開く">
+            <span aria-hidden="true">⚙</span>
+            <span>設定</span>
+          </Link>
+        </div>
       </header>
 
       <main className="expedition-content">

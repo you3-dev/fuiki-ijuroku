@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router'
+import { Link, NavLink, Outlet } from 'react-router'
 import { useGameSession } from './GameSessionContext'
 import { useOnlineStatus } from './useOnlineStatus'
 
@@ -25,6 +25,10 @@ export function AppShell() {
           <span className={`status-badge status-${saveStatus}`}>
             {saveLabels[saveStatus]}
           </span>
+          <Link className="header-settings" to="/settings" aria-label="設定・保存を開く">
+            <span aria-hidden="true">⚙</span>
+            <span>設定</span>
+          </Link>
           {!online && <span className="status-badge status-offline">オフライン</span>}
         </div>
       </header>

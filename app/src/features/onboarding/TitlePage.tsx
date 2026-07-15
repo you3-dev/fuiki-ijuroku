@@ -29,6 +29,15 @@ export function TitlePage() {
         alt="霧に沈む灰苔湿原と古代施設の管路"
       />
       <div className="title-vignette" aria-hidden="true" />
+      <button
+        className="title-settings"
+        type="button"
+        onClick={() => navigate('/settings')}
+        aria-label="設定・保存を開く"
+      >
+        <span aria-hidden="true">⚙</span>
+        <span>設定</span>
+      </button>
       <section className="title-content">
         <div className="title-seal" aria-hidden="true">異</div>
         <p className="title-kicker">第七辺境生態研究所・封鎖地調査記録</p>
