@@ -80,7 +80,7 @@ function BattlePanel({
               number: 5,
               action: 'cooperate',
               title: '傷つけずに協力を求める',
-              detail: '生態条件が整いました。調査隊へ迎えられます。',
+              detail: '助けた経緯が伝わりました。応じれば前衛へ加わります。',
             }
   const messages = {
     encountered: '黒い濁りをまとった異獣が、濾過膜を地面へ擦りつけています。',
@@ -102,6 +102,12 @@ function BattlePanel({
         </div>
       </div>
 
+      <section className="contact-mission" aria-label="この接触の目的">
+        <small>調査目的</small>
+        <strong>汚染で苦しむスミワタリを助け、協力できる状態にする</strong>
+        <p>この接触では、攻撃して倒す必要はありません。</p>
+      </section>
+
       <figure className={`encounter-visual ${battle.polluted ? 'is-polluted' : 'is-cleansed'}`}>
         <img
           src={`${import.meta.env.BASE_URL}art/${battle.polluted ? 'sumiwatari-encounter.webp' : 'sumiwatari-cleansed.webp'}`}
@@ -110,7 +116,10 @@ function BattlePanel({
         <figcaption>{battle.polluted ? '汚染反応・警戒中' : '汚染反応・解除'}</figcaption>
       </figure>
 
-      <p className="encounter-message" role="status">{messages[battle.lastAction]}</p>
+      <section className="contact-result" role="status">
+        <small>{battle.lastAction === 'encountered' ? '現在の状況' : '行動の結果'}</small>
+        <p>{messages[battle.lastAction]}</p>
+      </section>
 
       <section className="next-action-panel" aria-label="次にすること">
         <span>{tutorialStep.number}/5</span>
@@ -139,6 +148,14 @@ function BattlePanel({
         <span className={!battle.polluted ? 'condition-met' : ''}><b>{!battle.polluted ? '✓' : '3'}</b>浄化</span>
         <span className={battle.calmed ? 'condition-met' : ''}><b>{battle.calmed ? '✓' : '4'}</b>鎮静</span>
       </div>
+
+      {cooperationReady && (
+        <section className="cooperation-preview" aria-label="協力要請の結果">
+          <small>協力要請に成功すると</small>
+          <strong>スミワタリが前衛3枠目へ加わります</strong>
+          <span>浄化技能「澄み流し」が使えるようになります。</span>
+        </section>
+      )}
 
       <div className="battle-actions">
         <button
@@ -492,6 +509,15 @@ export function ExplorationPage() {
               <img src={`${import.meta.env.BASE_URL}art/sumiwatari-cleansed.webp`} alt="生命核の光を取り戻したスミワタリ" />
               <figcaption>汚染濾過・水路浄化個体</figcaption>
             </figure>
+            <section className="cooperation-reasons" aria-label="スミワタリが応じた理由">
+              <small>スミワタリが応じた理由</small>
+              <ul>
+                <li>苦しみの原因を観察した</li>
+                <li>濾過膜の汚染を取り除いた</li>
+                <li>光で敵意がないことを伝えた</li>
+              </ul>
+              <strong>スミワタリは自ら調査隊についてきました。</strong>
+            </section>
             <div className="party-joined" aria-label="前衛3体が揃いました">
               <span>トモシゴケ</span><span>ヌマクグリ</span><span className="new-member">スミワタリ<small>NEW</small></span>
             </div>

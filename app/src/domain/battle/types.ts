@@ -48,6 +48,11 @@ export type TowerBattleState = {
 export type BattleCommand =
   | { type: 'setSupport'; support: ProtagonistSupport }
   | { type: 'setPlan'; actorId: AllyCombatantId; plan: PlannedAction }
+  | {
+      type: 'commitRoundWithPlan'
+      support: ProtagonistSupport
+      plans: Record<AllyCombatantId, PlannedAction>
+    }
   | { type: 'commitRound' }
   | { type: 'resolveRound' }
 

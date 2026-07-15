@@ -65,6 +65,22 @@ describe('observation tower battle', () => {
     expect(battle.outcome).toBe('cooperation')
   })
 
+  it('commits an entire recommended plan atomically', () => {
+    const battle = updateTowerBattle(createTowerBattleState(), {
+      type: 'commitRoundWithPlan',
+      support: 'observe-call',
+      plans: {
+        tomoshigoke: { kind: 'defend', targetId: 'tomoshigoke' },
+        numakuguri: { kind: 'defend', targetId: 'numakuguri' },
+        sumiwatari: { kind: 'defend', targetId: 'sumiwatari' },
+      },
+    })
+
+    expect(battle.phase).toBe('committed')
+    expect(battle.supportPlan).toBe('observe-call')
+    expect(battle.plans.tomoshigoke.kind).toBe('defend')
+  })
+
   it('is deterministic for the same saved state and command', () => {
     const state = updateTowerBattle(createTowerBattleState(), {
       type: 'setSupport',

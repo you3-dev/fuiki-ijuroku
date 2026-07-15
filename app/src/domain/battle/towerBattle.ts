@@ -314,6 +314,17 @@ export function updateTowerBattle(
         plans: { ...state.plans, [command.actorId]: command.plan },
       }
     }
+    case 'commitRoundWithPlan': {
+      if (state.phase !== 'planning') return state
+      const planned = {
+        ...state,
+        supportPlan: command.support,
+        plans: command.plans,
+      }
+      return canCommitTowerRound(planned)
+        ? { ...planned, phase: 'committed' }
+        : state
+    }
     case 'commitRound':
       return canCommitTowerRound(state) ? { ...state, phase: 'committed' } : state
     case 'resolveRound':

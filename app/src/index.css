@@ -1409,6 +1409,64 @@ p {
   background: rgb(231 224 204 / 65%);
 }
 
+.contact-mission {
+  display: grid;
+  gap: 0.28rem;
+  border-bottom: 1px solid rgb(112 192 180 / 38%);
+  padding: 0.8rem 1rem;
+  color: var(--color-paper-raised);
+  background: linear-gradient(110deg, #2f4740, #253638);
+}
+
+.contact-mission small,
+.contact-result small,
+.cooperation-preview small,
+.cooperation-reasons small {
+  color: var(--color-water);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.contact-mission small {
+  color: #a9d7cd;
+}
+
+.contact-mission p,
+.contact-result p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.contact-mission p {
+  color: #cfddd6;
+}
+
+.contact-result {
+  display: grid;
+  min-height: 5.5rem;
+  gap: 0.28rem;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.85rem 1rem;
+  background: rgb(231 224 204 / 65%);
+}
+
+.cooperation-preview {
+  display: grid;
+  gap: 0.22rem;
+  margin: 1rem;
+  border: 1px solid var(--color-water);
+  border-radius: var(--radius-control);
+  padding: 0.75rem;
+  background: rgb(112 192 180 / 14%);
+}
+
+.cooperation-preview span {
+  color: var(--color-ink-muted);
+  font-size: 0.74rem;
+}
+
 .encounter-visual {
   height: clamp(12rem, 58vw, 20rem);
   margin: 0;
@@ -1746,6 +1804,205 @@ p {
   color: #c8d9d0;
 }
 
+.battle-objective-card {
+  display: flex;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgb(112 192 180 / 38%);
+  padding: 0.85rem 1rem;
+  color: var(--color-paper-raised);
+  background: linear-gradient(110deg, #30493f, #26383a);
+}
+
+.battle-objective-card > span {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--color-ancient-glow);
+  border-radius: 50%;
+  color: var(--color-ancient-glow);
+  font-weight: 850;
+}
+
+.battle-objective-card div {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.battle-objective-card small,
+.recommended-plan-heading small,
+.battle-result-summary small {
+  color: var(--color-water);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.battle-objective-card small {
+  color: #a9d7cd;
+}
+
+.battle-objective-card p {
+  margin: 0;
+  color: #cfddd6;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.battle-risk-note {
+  margin: 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.55rem 1rem;
+  color: #704239;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  background: rgb(238 216 202 / 68%);
+}
+
+.battle-result-summary,
+.recommended-plan-card {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0.9rem 1rem 0;
+  border: 1px solid var(--color-water);
+  border-radius: var(--radius-control);
+  padding: 0.8rem;
+}
+
+.battle-result-summary {
+  background: rgb(112 192 180 / 10%);
+}
+
+.battle-result-summary ul,
+.recommended-plan-lines {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.battle-result-summary li,
+.recommended-plan-lines li {
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.battle-result-summary > strong {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 0.55rem;
+  color: var(--color-moss-deep);
+  font-size: 0.78rem;
+}
+
+.recommended-plan-card {
+  border-width: 2px;
+  background: linear-gradient(135deg, #f4efdf, #e8eadb);
+  box-shadow: 0 0 1.3rem rgb(112 192 180 / 18%);
+}
+
+.recommended-plan-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.recommended-plan-heading > div {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.recommended-plan-heading > span {
+  border-radius: 999px;
+  padding: 0.22rem 0.48rem;
+  color: var(--color-paper-raised);
+  font-size: 0.62rem;
+  font-weight: 800;
+  background: var(--color-water);
+}
+
+.plan-forecast {
+  display: grid;
+  gap: 0.2rem;
+  border-left: 3px solid var(--color-ancient-glow);
+  padding: 0.5rem 0.65rem;
+  background: rgb(112 192 180 / 11%);
+}
+
+.plan-forecast small {
+  color: var(--color-water);
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.plan-forecast span,
+.saved-plan-note,
+.plan-warning {
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.saved-plan-note,
+.plan-warning {
+  margin: 0;
+}
+
+.plan-warning {
+  color: #704239;
+}
+
+.recommended-plan-button {
+  margin-top: 0.1rem;
+}
+
+.advanced-battle-planner {
+  margin: 0.8rem 1rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: rgb(231 224 204 / 48%);
+}
+
+.advanced-battle-planner > summary,
+.battle-log-details > summary {
+  cursor: pointer;
+  padding: 0.75rem;
+  color: var(--color-moss-deep);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.advanced-battle-planner > p {
+  margin: 0;
+  padding: 0 0.75rem 0.4rem;
+  color: var(--color-ink-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.advanced-battle-planner .support-planner {
+  margin-top: 0.4rem;
+}
+
+.advanced-battle-planner .ally-plan-list {
+  padding-inline: 0.75rem;
+}
+
+.battle-log-details {
+  margin: 0 0.75rem 0.75rem;
+  border-top: 1px dashed var(--color-border);
+}
+
+.battle-log-details .battle-log {
+  margin: 0;
+  padding: 0 0.75rem 0.5rem;
+}
+
+.advanced-battle-planner .battle-commit-button {
+  width: calc(100% - 1.5rem);
+  margin: 0 0.75rem 0.75rem;
+}
+
 .specimen-orb.misted {
   border-color: #c8d9d0;
   background: #566b68;
@@ -1915,6 +2172,42 @@ ul.battle-log {
   color: var(--color-ink-muted);
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.cooperation-reasons {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  border: 1px solid var(--color-water);
+  border-radius: var(--radius-control);
+  padding: 0.8rem;
+  background: rgb(112 192 180 / 12%);
+}
+
+.cooperation-reasons ul {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cooperation-reasons li {
+  color: var(--color-moss-deep);
+  font-size: 0.76rem;
+}
+
+.cooperation-reasons li::before {
+  margin-right: 0.4rem;
+  color: var(--color-water);
+  content: '✓';
+  font-weight: 850;
+}
+
+.cooperation-reasons strong {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 0.55rem;
+  font-size: 0.78rem;
 }
 
 .recruit-visual {
