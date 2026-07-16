@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useGameSession } from '../../app/GameSessionContext'
-import { canRequestCooperation } from '../../domain/exploration/commands'
 import { graymossNodes } from '../../domain/exploration/data'
 import type {
   BossReportChoice,
@@ -12,6 +11,7 @@ import { WaterwayBattlePanel } from './WaterwayBattlePanel'
 import { FilterGrovePanel } from './FilterGrovePanel'
 import { CoreBossBattlePanel } from './CoreBossBattlePanel'
 import { IntroBattlePanel } from './IntroBattlePanel'
+import { SumiwatariRescuePanel } from './SumiwatariRescuePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
 const KIRIHANE_ID = 'creature-kirihane-tower-001'
@@ -38,181 +38,6 @@ const bossReportOptions: Array<{
     detail: '自然故障ではない停止命令と、兵器化計画の疑いを先頭に置く。',
   },
 ]
-
-function BattlePanel({
-  runAction,
-}: {
-  runAction: (action: ExplorationAction) => Promise<boolean>
-}) {
-  const { state } = useGameSession()
-  const battle = state?.expedition.battle
-  if (!battle || 'kind' in battle) return null
-
-  const cooperationReady = canRequestCooperation(battle)
-  const tutorialStep = !battle.observed
-    ? {
-        number: 1,
-        action: 'observe',
-        title: '苦しむ原因を観察する',
-        detail: '攻撃する前に、体表と行動の変化を調べます。',
-      }
-    : !battle.pressureDefended
-      ? {
-          number: 2,
-          action: 'defend',
-          title: '濁り水圧から調査隊を守る',
-          detail: 'ヌマクグリの防御で、安全な処置の時間を作ります。',
-        }
-      : battle.polluted
-        ? {
-            number: 3,
-            action: 'cleanse',
-            title: '濾過膜の汚染を取り除く',
-            detail: '観察で見つけた詰まりへ、汚染除去具を使います。',
-          }
-        : !battle.calmed
-          ? {
-              number: 4,
-              action: 'calm',
-              title: '光の周期を合わせて鎮める',
-              detail: 'トモシゴケの明滅で、敵意がないことを伝えます。',
-            }
-          : {
-              number: 5,
-              action: 'cooperate',
-              title: '傷つけずに協力を求める',
-              detail: '助けた経緯が伝わりました。応じれば前衛へ加わります。',
-            }
-  const messages = {
-    encountered: '黒い濁りをまとった異獣が、濾過膜を地面へ擦りつけています。',
-    observed: '濾過膜の内側に汚染が詰まっています。濁り水圧の予兆を確認しました。',
-    defended: 'ヌマクグリが濁り水圧を受け止めました。今なら安全に処置できます。',
-    cleansed: '汚染が剥がれ、半透明の体表が戻りました。警戒度が下がっています。',
-    calmed: 'トモシゴケの静かな明滅に呼吸が合いました。協力を求められます。',
-  } as const
-
-  return (
-    <section className="encounter-card" aria-labelledby="encounter-title">
-      <div className="encounter-heading">
-        <div>
-          <p className="eyebrow">初回観察戦・第{battle.round}ラウンド</p>
-          <h2 id="encounter-title">汚染されたスミワタリ</h2>
-        </div>
-        <div className={`specimen-orb ${battle.polluted ? 'polluted' : 'cleansed'}`} aria-hidden="true">
-          澄
-        </div>
-      </div>
-
-      <section className="contact-mission" aria-label="この接触の目的">
-        <small>調査目的</small>
-        <strong>汚染で苦しむスミワタリを助け、協力できる状態にする</strong>
-        <p>この接触では、攻撃して倒す必要はありません。</p>
-      </section>
-
-      <figure className={`encounter-visual ${battle.polluted ? 'is-polluted' : 'is-cleansed'}`}>
-        <img
-          src={`${import.meta.env.BASE_URL}art/${battle.polluted ? 'sumiwatari-encounter.webp' : 'sumiwatari-cleansed.webp'}`}
-          alt={battle.polluted ? '黒い沈殿物に覆われ苦しむスミワタリ' : '汚染が取れ生命核の光を取り戻したスミワタリ'}
-        />
-        <figcaption>{battle.polluted ? '汚染反応・警戒中' : '汚染反応・解除'}</figcaption>
-      </figure>
-
-      <section className="contact-result" role="status">
-        <small>{battle.lastAction === 'encountered' ? '現在の状況' : '行動の結果'}</small>
-        <p>{messages[battle.lastAction]}</p>
-      </section>
-
-      <section className="next-action-panel" aria-label="次にすること">
-        <span>{tutorialStep.number}/5</span>
-        <div>
-          <small>次にすること</small>
-          <strong>{tutorialStep.title}</strong>
-          <p>{tutorialStep.detail}</p>
-        </div>
-      </section>
-
-      <div className="battle-meters">
-        <div>
-          <span>警戒度</span>
-          <strong>{battle.vigilance}</strong>
-          <div className="meter-track"><span style={{ width: `${battle.vigilance}%` }} /></div>
-        </div>
-        <div>
-          <span>生態状態</span>
-          <strong>{battle.polluted ? '汚染' : battle.calmed ? '鎮静' : '安定化'}</strong>
-        </div>
-      </div>
-
-      <div className="condition-strip" aria-label="協力条件">
-        <span className={battle.observed ? 'condition-met' : ''}><b>{battle.observed ? '✓' : '1'}</b>観察</span>
-        <span className={battle.pressureDefended ? 'condition-met' : ''}><b>{battle.pressureDefended ? '✓' : '2'}</b>防御</span>
-        <span className={!battle.polluted ? 'condition-met' : ''}><b>{!battle.polluted ? '✓' : '3'}</b>浄化</span>
-        <span className={battle.calmed ? 'condition-met' : ''}><b>{battle.calmed ? '✓' : '4'}</b>鎮静</span>
-      </div>
-
-      {cooperationReady && (
-        <section className="cooperation-preview" aria-label="協力要請の結果">
-          <small>協力要請に成功すると</small>
-          <strong>スミワタリが前衛3枠目へ加わります</strong>
-          <span>浄化技能「澄み流し」が使えるようになります。</span>
-        </section>
-      )}
-
-      <div className="battle-actions">
-        <button
-          className={tutorialStep.action === 'observe' ? 'recommended-action' : undefined}
-          type="button"
-          aria-current={tutorialStep.action === 'observe' ? 'step' : undefined}
-          disabled={battle.observed}
-          onClick={() => void runAction({ type: 'battleAction', action: 'observe' })}
-        >
-          <strong>主人公：観察</strong>
-          <small>濾過器官と危険行動の原因を調べる</small>
-        </button>
-        <button
-          className={tutorialStep.action === 'defend' ? 'recommended-action' : undefined}
-          type="button"
-          aria-current={tutorialStep.action === 'defend' ? 'step' : undefined}
-          disabled={!battle.observed || battle.pressureDefended}
-          onClick={() => void runAction({ type: 'battleAction', action: 'defend' })}
-        >
-          <strong>ヌマクグリ：防御</strong>
-          <small>予告された濁り水圧を受け止める</small>
-        </button>
-        <button
-          className={tutorialStep.action === 'cleanse' ? 'recommended-action' : undefined}
-          type="button"
-          aria-current={tutorialStep.action === 'cleanse' ? 'step' : undefined}
-          disabled={!battle.pressureDefended || !battle.polluted}
-          onClick={() => void runAction({ type: 'battleAction', action: 'cleanse' })}
-        >
-          <strong>主人公：汚染除去具</strong>
-          <small>残り{battle.cleanserCount}個・汚染解除、警戒度−20</small>
-        </button>
-        <button
-          className={tutorialStep.action === 'calm' ? 'recommended-action' : undefined}
-          type="button"
-          aria-current={tutorialStep.action === 'calm' ? 'step' : undefined}
-          disabled={battle.polluted || battle.calmed}
-          onClick={() => void runAction({ type: 'battleAction', action: 'calm' })}
-        >
-          <strong>トモシゴケ：静かな明滅</strong>
-          <small>鎮静を付与し、警戒度−20</small>
-        </button>
-        <button
-          className={`cooperation-action ${tutorialStep.action === 'cooperate' ? 'recommended-action' : ''}`}
-          type="button"
-          aria-current={tutorialStep.action === 'cooperate' ? 'step' : undefined}
-          disabled={!cooperationReady}
-          onClick={() => void runAction({ type: 'battleAction', action: 'requestCooperation' })}
-        >
-          <strong>協力要請</strong>
-          <small>{cooperationReady ? '条件達成・必ず成功します' : '生態条件を満たす必要があります'}</small>
-        </button>
-      </div>
-    </section>
-  )
-}
 
 export function ExplorationPage() {
   const { state, execute, saveStatus, retrySave } = useGameSession()
@@ -444,7 +269,9 @@ export function ExplorationPage() {
           <IntroBattlePanel runAction={runAction} />
         )}
 
-        {expedition.phase === 'battle' && <BattlePanel runAction={runAction} />}
+        {expedition.phase === 'battle' && (
+          <SumiwatariRescuePanel runAction={runAction} />
+        )}
 
         {expedition.phase === 'tower-event' && (
           <section className="field-event-card tower-arrival-card">

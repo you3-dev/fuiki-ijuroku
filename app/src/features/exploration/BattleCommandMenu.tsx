@@ -1,6 +1,11 @@
 type BattleCommandMenuProps = {
   actorName: string
   skillOpen: boolean
+  attackDisabled?: boolean
+  attackHint?: string
+  skillDisabled?: boolean
+  defendDisabled?: boolean
+  defendHint?: string
   onAttack: () => void
   onToggleSkills: () => void
   onDefend: () => void
@@ -9,18 +14,24 @@ type BattleCommandMenuProps = {
 export function BattleCommandMenu({
   actorName,
   skillOpen,
+  attackDisabled = false,
+  attackHint = '攻撃・活性＋20',
+  skillDisabled = false,
+  defendDisabled = false,
+  defendHint = '被害軽減・活性＋25',
   onAttack,
   onToggleSkills,
   onDefend,
 }: BattleCommandMenuProps) {
   return (
     <div className="battle-command-grid" aria-label={`${actorName}の行動`}>
-      <button type="button" onClick={onAttack}>
+      <button type="button" disabled={attackDisabled} onClick={onAttack}>
         <strong>たたかう</strong>
-        <small>攻撃・活性＋20</small>
+        <small>{attackHint}</small>
       </button>
       <button
         type="button"
+        disabled={skillDisabled}
         className={skillOpen ? 'is-selected' : undefined}
         aria-expanded={skillOpen}
         onClick={onToggleSkills}
@@ -28,9 +39,9 @@ export function BattleCommandMenu({
         <strong>特技</strong>
         <small>活性を使う</small>
       </button>
-      <button type="button" onClick={onDefend}>
+      <button type="button" disabled={defendDisabled} onClick={onDefend}>
         <strong>防御</strong>
-        <small>被害軽減・活性＋25</small>
+        <small>{defendHint}</small>
       </button>
       <button type="button" disabled>
         <strong>交代</strong>
