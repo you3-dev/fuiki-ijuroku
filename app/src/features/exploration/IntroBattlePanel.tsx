@@ -146,7 +146,16 @@ export function IntroBattlePanel({
               }}
             >
               <strong>{allyInfo[actorId].name}</strong>
-              <span>HP {member.currentHp}/{member.maxHp}</span>
+              <span className="ally-tab-hp">
+                HP {member.currentHp}/{member.maxHp}
+                <BattleValueBar
+                  value={member.currentHp}
+                  max={member.maxHp}
+                  label={`${allyInfo[actorId].name}のHP`}
+                  compact
+                  decorative
+                />
+              </span>
               <small>{battle.plans[actorId] ? `予定：${planNames[battle.plans[actorId]]}` : allyInfo[actorId].role}</small>
             </button>
           )

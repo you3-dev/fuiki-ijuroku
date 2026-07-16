@@ -13,12 +13,14 @@ export function BattleValueBar({
   label,
   tone = 'hp',
   compact = false,
+  decorative = false,
 }: {
   value: number
   max: number
   label: string
   tone?: BattleValueTone
   compact?: boolean
+  decorative?: boolean
 }) {
   const previousValue = useRef(value)
   const trailTimer = useRef<number | undefined>(undefined)
@@ -48,22 +50,23 @@ export function BattleValueBar({
   }, [value])
 
   return (
-    <div
+    <span
       className={`battle-value-bar is-${tone}${compact ? ' is-compact' : ''}`}
       data-change={change ?? undefined}
+      aria-hidden={decorative || undefined}
     >
-      <div
+      <span
         className="battle-value-track"
-        role="progressbar"
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={max}
-        aria-valuenow={value}
-        aria-valuetext={`${value}/${max}`}
+        role={decorative ? undefined : 'progressbar'}
+        aria-label={decorative ? undefined : label}
+        aria-valuemin={decorative ? undefined : 0}
+        aria-valuemax={decorative ? undefined : max}
+        aria-valuenow={decorative ? undefined : value}
+        aria-valuetext={decorative ? undefined : `${value}/${max}`}
       >
         <i className="battle-value-trail" style={{ width: `${percentage(trailValue, max)}%` }} />
         <i className="battle-value-fill" style={{ width: `${percentage(value, max)}%` }} />
-      </div>
-    </div>
+      </span>
+    </span>
   )
 }

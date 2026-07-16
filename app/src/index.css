@@ -2491,6 +2491,7 @@ ul.battle-log {
 }
 
 .battle-value-bar {
+  display: block;
   min-width: 0;
 }
 
@@ -2502,11 +2503,59 @@ ul.battle-log {
 
 .battle-value-track {
   position: relative;
+  display: block;
   height: 0.55rem;
   overflow: hidden;
   border-radius: 999px;
   background: #c4bda8;
   transition: box-shadow 180ms ease;
+}
+
+.ally-tab-hp {
+  display: grid;
+  gap: 0.18rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.ally-tab-hp .battle-value-track {
+  height: 0.24rem;
+}
+
+.intro-ally-tabs button:has(.battle-value-bar[data-change="decrease"]),
+.practice-ally-tabs button:has(.battle-value-bar[data-change="decrease"]),
+.tower-ally-tabs button:has(.battle-value-bar[data-change="decrease"]) {
+  animation: ally-tab-damage 680ms ease-out;
+}
+
+.intro-ally-tabs button:has(.battle-value-bar[data-change="increase"]),
+.practice-ally-tabs button:has(.battle-value-bar[data-change="increase"]),
+.tower-ally-tabs button:has(.battle-value-bar[data-change="increase"]) {
+  animation: ally-tab-heal 680ms ease-out;
+}
+
+@keyframes ally-tab-damage {
+  0%, 100% {
+    background-color: inherit;
+  }
+
+  28% {
+    border-color: #a25b4d;
+    background-color: #efd1c4;
+    box-shadow: 0 0 0.8rem rgb(170 78 60 / 38%);
+  }
+}
+
+@keyframes ally-tab-heal {
+  0%, 100% {
+    background-color: inherit;
+  }
+
+  28% {
+    border-color: #527c58;
+    background-color: #d7ead4;
+    box-shadow: 0 0 0.8rem rgb(79 145 91 / 38%);
+  }
 }
 
 .battle-value-bar.is-compact .battle-value-track {
@@ -2684,7 +2733,7 @@ ul.battle-log {
 .intro-ally-tabs button {
   display: grid;
   gap: 0.12rem;
-  min-height: 4.25rem;
+  min-height: 4.65rem;
   border: 1px solid var(--color-border);
   border-radius: 0.65rem;
   padding: 0.55rem;
@@ -3301,7 +3350,7 @@ ul.battle-log {
   display: grid;
   gap: 0.1rem;
   min-width: 0;
-  min-height: 4.35rem;
+  min-height: 4.75rem;
   border: 1px solid var(--color-border);
   border-radius: 0.6rem;
   padding: 0.45rem;
@@ -3627,7 +3676,7 @@ ul.battle-log {
   display: grid;
   gap: 0.08rem;
   min-width: 0;
-  min-height: 4rem;
+  min-height: 4.55rem;
   border: 1px solid var(--color-border);
   border-radius: 0.6rem;
   padding: 0.42rem;

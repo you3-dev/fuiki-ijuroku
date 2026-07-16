@@ -351,7 +351,16 @@ export function TowerBattlePanel({
               }}
             >
               <strong>{combatants[actorId].name}</strong>
-              <span>HP {unit.currentHp}/{combatants[actorId].maxHp}</span>
+              <span className="ally-tab-hp">
+                HP {unit.currentHp}/{combatants[actorId].maxHp}
+                <BattleValueBar
+                  value={unit.currentHp}
+                  max={combatants[actorId].maxHp}
+                  label={`${combatants[actorId].name}のHP`}
+                  compact
+                  decorative
+                />
+              </span>
               <small>予定：{planNames[battle.plans[actorId].kind]}</small>
             </button>
           )

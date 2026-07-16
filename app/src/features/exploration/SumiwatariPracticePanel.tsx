@@ -142,7 +142,16 @@ export function SumiwatariPracticePanel({
               }}
             >
               <strong>{allyInfo[actorId].name}</strong>
-              <span>HP {ally.currentHp}/{ally.maxHp}</span>
+              <span className="ally-tab-hp">
+                HP {ally.currentHp}/{ally.maxHp}
+                <BattleValueBar
+                  value={ally.currentHp}
+                  max={ally.maxHp}
+                  label={`${allyInfo[actorId].name}のHP`}
+                  compact
+                  decorative
+                />
+              </span>
               <small>
                 {ally.polluted
                   ? '汚染'
