@@ -285,6 +285,7 @@ function resolveRound(state: WaterwayBattleState): WaterwayBattleState {
     if (ally.pollution > 0) ally.vitality = Math.max(0, ally.vitality - 5)
   }
   next.round += 1
+  next.plans = defaultPlans()
   next.supportPlan = 'none'
   next.phase = 'planning'
   return next

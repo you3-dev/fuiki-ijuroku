@@ -55,6 +55,7 @@ describe('sunken waterway battle', () => {
     expect(battle.vigilance).toBe(10)
     expect(battle.calmed).toBe(true)
     expect(battle.allies.tomoshigoke.pollution).toBe(0)
+    expect(Object.values(battle.plans).every((plan) => plan.kind === 'defend')).toBe(true)
   })
 
   it('secures the observed route without reducing either target HP', () => {

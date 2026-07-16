@@ -3536,6 +3536,103 @@ ul.battle-log {
   margin-inline: 0.75rem;
 }
 
+.waterway-command-battle .standard-battle-heading {
+  min-height: 8.5rem;
+  background:
+    radial-gradient(circle at 80% 35%, rgb(119 157 139 / 22%), transparent 7rem),
+    linear-gradient(140deg, #46574d, #293638 64%, #1a2426);
+}
+
+.waterway-target-overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  padding: 0.65rem 0.75rem 0.4rem;
+}
+
+.waterway-target-overview article {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  padding: 0.55rem;
+  background: #e5e4d3;
+}
+
+.waterway-target-overview strong {
+  overflow: hidden;
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waterway-target-overview span {
+  color: var(--color-ink-muted);
+  font-size: 0.6rem;
+}
+
+.waterway-target-overview b {
+  color: var(--color-rust);
+  font-size: 0.74rem;
+}
+
+.waterway-approach-note {
+  margin: 0 0.75rem 0.65rem;
+  border-left: 3px solid var(--color-water);
+  padding: 0.45rem 0.55rem;
+  color: var(--color-ink-muted);
+  font-size: 0.65rem;
+  line-height: 1.45;
+  background: rgb(112 192 180 / 10%);
+}
+
+.waterway-command-battle .active-ally-status p {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.waterway-target-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.waterway-target-picker > small {
+  grid-column: 1 / -1;
+  color: var(--color-water);
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.waterway-target-picker button {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  min-height: 3.3rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 0.48rem 0.55rem;
+  color: var(--color-ink);
+  text-align: left;
+  background: #e8e5d6;
+}
+
+.waterway-target-picker button.is-recommended {
+  border-color: var(--color-water);
+  box-shadow: inset 0 0 0 1px var(--color-water);
+  background: #dcebe5;
+}
+
+.waterway-target-picker button span {
+  overflow: hidden;
+  color: var(--color-ink-muted);
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .clarifying-flow-summary span {
   color: var(--color-ink-muted);
 }

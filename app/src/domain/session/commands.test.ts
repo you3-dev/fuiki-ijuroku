@@ -280,6 +280,10 @@ describe('executeGameCommand', () => {
       } as const,
       { type: 'commitRound' } as const,
       { type: 'resolveRound' } as const,
+      {
+        type: 'setPlan', actorId: 'sumiwatari',
+        plan: { kind: 'skill', skillId: 'clarifying-flow', targetId: 'polluted-sumiwatari' },
+      } as const,
       { type: 'commitRound' } as const,
       { type: 'resolveRound' } as const,
       {
