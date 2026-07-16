@@ -1,6 +1,8 @@
 type BattleCommandMenuProps = {
   actorName: string
   skillOpen: boolean
+  selectedAction?: 'attack' | 'skill' | 'defend'
+  focusAction?: 'attack' | 'skill' | 'defend'
   attackDisabled?: boolean
   attackHint?: string
   skillDisabled?: boolean
@@ -14,6 +16,8 @@ type BattleCommandMenuProps = {
 export function BattleCommandMenu({
   actorName,
   skillOpen,
+  selectedAction,
+  focusAction,
   attackDisabled = false,
   attackHint = '攻撃・活性＋20',
   skillDisabled = false,
@@ -23,23 +27,43 @@ export function BattleCommandMenu({
   onToggleSkills,
   onDefend,
 }: BattleCommandMenuProps) {
+  function commandClass(action: 'attack' | 'skill' | 'defend') {
+    return [
+      selectedAction === action ? 'is-selected' : '',
+      focusAction === action ? 'is-focused' : '',
+    ].filter(Boolean).join(' ') || undefined
+  }
+
   return (
     <div className="battle-command-grid" aria-label={`${actorName}の行動`}>
-      <button type="button" disabled={attackDisabled} onClick={onAttack}>
+      <button
+        type="button"
+        className={commandClass('attack')}
+        aria-pressed={selectedAction === 'attack'}
+        disabled={attackDisabled}
+        onClick={onAttack}
+      >
         <strong>たたかう</strong>
         <small>{attackHint}</small>
       </button>
       <button
         type="button"
         disabled={skillDisabled}
-        className={skillOpen ? 'is-selected' : undefined}
+        className={commandClass('skill')}
+        aria-pressed={selectedAction === 'skill'}
         aria-expanded={skillOpen}
         onClick={onToggleSkills}
       >
         <strong>特技</strong>
         <small>活性を使う</small>
       </button>
-      <button type="button" disabled={defendDisabled} onClick={onDefend}>
+      <button
+        type="button"
+        className={commandClass('defend')}
+        aria-pressed={selectedAction === 'defend'}
+        disabled={defendDisabled}
+        onClick={onDefend}
+      >
         <strong>防御</strong>
         <small>{defendHint}</small>
       </button>

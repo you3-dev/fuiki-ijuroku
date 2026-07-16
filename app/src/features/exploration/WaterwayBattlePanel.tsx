@@ -424,6 +424,18 @@ export function WaterwayBattlePanel({
         <BattleCommandMenu
           actorName={combatants[activeActor].name}
           skillOpen={skillOpen}
+          selectedAction={
+            battle.plans[activeActor].kind === 'basic'
+              ? 'attack'
+              : battle.plans[activeActor].kind
+          }
+          focusAction={
+            targetMode === 'attack'
+              ? 'attack'
+              : skillOpen
+                ? 'skill'
+                : undefined
+          }
           attackDisabled={commandsLocked}
           attackHint="対象HPへ被害・調査失敗の危険"
           skillDisabled={commandsLocked}

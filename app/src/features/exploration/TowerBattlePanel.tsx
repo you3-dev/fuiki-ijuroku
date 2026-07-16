@@ -355,6 +355,12 @@ export function TowerBattlePanel({
         <BattleCommandMenu
           actorName={combatants[activeActor].name}
           skillOpen={skillOpen}
+          selectedAction={
+            battle.plans[activeActor].kind === 'basic'
+              ? 'attack'
+              : battle.plans[activeActor].kind
+          }
+          focusAction={skillOpen ? 'skill' : undefined}
           attackDisabled={commandsLocked}
           attackHint="攻撃・警戒＋10・活性＋20"
           skillDisabled={commandsLocked}

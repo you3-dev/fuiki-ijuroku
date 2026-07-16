@@ -158,6 +158,16 @@ export function IntroBattlePanel({
         <BattleCommandMenu
           actorName={info.name}
           skillOpen={skillOpen}
+          selectedAction={
+            battle.plans[activeActor] === 'attack'
+              ? 'attack'
+              : battle.plans[activeActor] === 'defend'
+                ? 'defend'
+                : battle.plans[activeActor]
+                  ? 'skill'
+                  : undefined
+          }
+          focusAction={skillOpen ? 'skill' : undefined}
           onAttack={() => void choosePlan(activeActor, 'attack')}
           onToggleSkills={() => setSkillOpen((open) => !open)}
           onDefend={() => void choosePlan(activeActor, 'defend')}

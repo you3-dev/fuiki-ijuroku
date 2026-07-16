@@ -2607,11 +2607,63 @@ ul.battle-log {
   color: var(--color-ink);
   text-align: left;
   background: #e8ead7;
+  transition:
+    transform 110ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .battle-command-grid button.is-selected {
   color: white;
   background: var(--color-moss-deep);
+}
+
+.battle-command-grid button.is-selected {
+  border-color: var(--color-moss-deep);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 24%);
+}
+
+.battle-command-grid button.is-focused:not(.is-selected) {
+  border-color: var(--color-water);
+  box-shadow:
+    inset 0 0 0 1px var(--color-water),
+    0 0 0.7rem rgb(112 192 180 / 20%);
+  background: #eff3df;
+}
+
+.battle-command-grid button.is-selected strong::after {
+  content: "  ✓";
+  color: var(--color-ancient-glow);
+}
+
+.battle-command-grid button:active:not(:disabled),
+.intro-ally-tabs button:active:not(:disabled),
+.rescue-ally-tabs button:active:not(:disabled),
+.practice-ally-tabs button:active:not(:disabled),
+.tower-ally-tabs button:active:not(:disabled),
+.intro-skill-list button:active:not(:disabled),
+.rescue-skill-list button:active:not(:disabled),
+.practice-skill-list button:active:not(:disabled),
+.tower-skill-list button:active:not(:disabled),
+.waterway-target-picker button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.intro-ally-tabs button,
+.rescue-ally-tabs button,
+.practice-ally-tabs button,
+.tower-ally-tabs button,
+.intro-skill-list button,
+.rescue-skill-list button,
+.practice-skill-list button,
+.tower-skill-list button,
+.waterway-target-picker button {
+  transition:
+    transform 110ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .battle-command-grid button small {

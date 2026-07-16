@@ -160,6 +160,16 @@ export function SumiwatariPracticePanel({
         <BattleCommandMenu
           actorName={activeInfo.name}
           skillOpen={skillOpen}
+          selectedAction={
+            activePlan === 'attack'
+              ? 'attack'
+              : activePlan === 'defend'
+                ? 'defend'
+                : activePlan
+                  ? 'skill'
+                  : undefined
+          }
+          focusAction={skillOpen ? 'skill' : undefined}
           attackDisabled={forceClarifyingFlow}
           attackHint={forceClarifyingFlow ? '先に仲間を浄化' : '攻撃・活性＋20'}
           defendDisabled={forceClarifyingFlow}

@@ -214,6 +214,15 @@ export function SumiwatariRescuePanel({
         <BattleCommandMenu
           actorName={info.name}
           skillOpen={skillOpen}
+          focusAction={
+            skillOpen
+              ? 'skill'
+              : goal.mode === 'numakuguri' && activeActor === 'numakuguri'
+                ? 'defend'
+                : goal.mode === activeActor
+                  ? 'skill'
+                  : undefined
+          }
           attackDisabled
           attackHint="救助対象には使わない"
           defendDisabled={!canGuardPressure}
