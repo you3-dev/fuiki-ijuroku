@@ -18,6 +18,7 @@ import type {
 import type { ExplorationAction } from '../../domain/exploration/types'
 import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
+import { BattleValueBar } from './BattleValueBar'
 
 const waterwayTargetIds: WaterwayTargetId[] = [
   'pollution-mass',
@@ -335,6 +336,13 @@ export function WaterwayBattlePanel({
               <strong>{targetNames[targetId]}</strong>
               <span>生態HP {target.currentHp}/{targetMaxHp[targetId]}</span>
               <b>汚染 {target.pollution}</b>
+              <BattleValueBar
+                value={target.pollution}
+                max={100}
+                label={`${targetNames[targetId]}の汚染値`}
+                tone="pollution"
+                compact
+              />
             </article>
           )
         })}

@@ -2490,6 +2490,91 @@ ul.battle-log {
   transition: width 240ms ease;
 }
 
+.battle-value-bar {
+  min-width: 0;
+}
+
+.normal-enemy-status > .battle-value-bar {
+  height: auto;
+  overflow: visible;
+  background: transparent;
+}
+
+.battle-value-track {
+  position: relative;
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #c4bda8;
+  transition: box-shadow 180ms ease;
+}
+
+.battle-value-bar.is-compact .battle-value-track {
+  height: 0.38rem;
+}
+
+.battle-value-track > i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.battle-value-trail {
+  z-index: 1;
+  background: #d9a36c;
+  transition: width 300ms ease;
+}
+
+.battle-value-fill {
+  z-index: 2;
+  background: linear-gradient(90deg, #8b5348, #b76a54);
+  transition: width 260ms cubic-bezier(0.22, 0.76, 0.26, 1);
+}
+
+.battle-value-bar.is-pollution .battle-value-track {
+  background: #bcb8a8;
+}
+
+.battle-value-bar.is-pollution .battle-value-trail {
+  background: #bb8d63;
+}
+
+.battle-value-bar.is-pollution .battle-value-fill {
+  background: linear-gradient(90deg, #4c6256, #7c876a);
+}
+
+.battle-value-bar[data-change="decrease"] .battle-value-track {
+  animation: value-damage-flash 620ms ease-out;
+}
+
+.battle-value-bar[data-change="increase"] .battle-value-track {
+  animation: value-heal-flash 620ms ease-out;
+}
+
+@keyframes value-damage-flash {
+  0%, 100% {
+    box-shadow: 0 0 0 transparent;
+  }
+
+  30% {
+    box-shadow: 0 0 0.75rem rgb(183 88 67 / 68%);
+  }
+}
+
+@keyframes value-heal-flash {
+  0%, 100% {
+    box-shadow: 0 0 0 transparent;
+  }
+
+  30% {
+    box-shadow: 0 0 0.8rem rgb(91 164 108 / 65%);
+  }
+}
+
 .normal-battle-result {
   margin: 0.25rem 0.8rem 0;
   border-left: 3px solid var(--color-water);
@@ -3404,6 +3489,10 @@ ul.battle-log {
 .tower-enemy-status span {
   color: var(--color-ink-muted);
   font-size: 0.62rem;
+}
+
+.tower-enemy-health-bar {
+  padding: 0 0.75rem 0.45rem;
 }
 
 .tower-risk-note {

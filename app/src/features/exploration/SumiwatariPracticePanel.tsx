@@ -11,6 +11,7 @@ import type {
 } from '../../domain/exploration/types'
 import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
+import { BattleValueBar } from './BattleValueBar'
 
 const allyInfo = {
   tomoshigoke: {
@@ -111,7 +112,7 @@ export function SumiwatariPracticePanel({
 
       <div className="normal-enemy-status">
         <span>HP</span>
-        <div><i style={{ width: `${(battle.enemyHp / battle.enemyMaxHp) * 100}%` }} /></div>
+        <BattleValueBar value={battle.enemyHp} max={battle.enemyMaxHp} label="汚染をまとったキリハネのHP" />
         <strong>{battle.enemyHp}/{battle.enemyMaxHp}</strong>
       </div>
 

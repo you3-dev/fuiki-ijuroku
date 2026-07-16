@@ -14,6 +14,7 @@ import type { ExplorationAction } from '../../domain/exploration/types'
 import { useGameSession } from '../../app/GameSessionContext'
 import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
+import { BattleValueBar } from './BattleValueBar'
 
 const allySkill = {
   tomoshigoke: 'calming-glimmer',
@@ -253,6 +254,14 @@ export function TowerBattlePanel({
         <div><span>HP</span><strong>{battle.combatants.kirihane.currentHp}/{combatants.kirihane.maxHp}</strong></div>
         <div><span>警戒度</span><strong>{battle.vigilance}</strong></div>
         <div><span>霧</span><strong>残り{battle.mistTurns}R</strong></div>
+      </div>
+      <div className="tower-enemy-health-bar">
+        <BattleValueBar
+          value={battle.combatants.kirihane.currentHp}
+          max={combatants.kirihane.maxHp}
+          label="霧中のキリハネのHP"
+          compact
+        />
       </div>
       <p className="tower-risk-note">倒してしまうと協力を求められません。攻撃は警戒度も上げます。</p>
 
