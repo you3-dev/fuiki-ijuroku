@@ -14,6 +14,8 @@ export type ExpeditionPhase =
   | 'node-choice'
   | 'battle'
   | 'recruit-result'
+  | 'sumi-practice'
+  | 'sumi-practice-result'
   | 'branch-choice'
   | 'branch-selected'
   | 'tower-event'
@@ -70,6 +72,30 @@ export type IntroBattleState = {
   lastLog: string[]
 }
 
+export type SumiPracticeAllyId = 'tomoshigoke' | 'numakuguri' | 'sumiwatari'
+
+export type SumiPracticePlan =
+  | 'attack'
+  | 'defend'
+  | 'moss-droplet'
+  | 'burrow-guard'
+  | 'clarifying-flow'
+
+export type SumiPracticeBattleState = {
+  kind: 'sumi-practice'
+  round: number
+  enemyHp: number
+  enemyMaxHp: number
+  allies: Record<
+    SumiPracticeAllyId,
+    { currentHp: number; maxHp: number; vitality: number; polluted: boolean }
+  >
+  plans: Record<SumiPracticeAllyId, SumiPracticePlan | null>
+  clarifyingFlowUsed: boolean
+  outcome: 'ongoing' | 'victory'
+  lastLog: string[]
+}
+
 export type GroveEncounterState = {
   round: number
   vigilance: number
@@ -96,9 +122,10 @@ export type ExpeditionState = {
   unlockedNodeIds: RegionNodeId[]
   entryObserved: boolean
   introBattleCompleted: boolean
+  sumiPracticeCompleted: boolean
   firstRecruitmentCompleted: boolean
   selectedBranchId: 'observation-tower' | 'sunken-waterway' | null
-  battle: TutorialBattleState | IntroBattleState | null
+  battle: TutorialBattleState | IntroBattleState | SumiPracticeBattleState | null
   towerBattle: TowerBattleState | null
   towerCompleted: boolean
   waterwayApproach: WaterwayApproach | null
@@ -128,6 +155,13 @@ export type ExplorationAction =
       action: 'observe' | 'defend' | 'cleanse' | 'calm' | 'requestCooperation'
     }
   | { type: 'finishRecruitment' }
+  | {
+      type: 'setSumiPracticePlan'
+      actorId: SumiPracticeAllyId
+      plan: SumiPracticePlan
+    }
+  | { type: 'resolveSumiPracticeRound' }
+  | { type: 'finishSumiPractice' }
   | { type: 'beginTowerEncounter' }
   | { type: 'towerBattleCommand'; command: BattleCommand }
   | { type: 'retryTowerEncounter' }

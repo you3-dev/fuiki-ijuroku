@@ -49,6 +49,13 @@ function addIntroBattleState(expedition: Record<string, unknown>) {
   }
 }
 
+function addSumiPracticeState(expedition: Record<string, unknown>) {
+  return {
+    ...expedition,
+    sumiPracticeCompleted: expedition.firstRecruitmentCompleted === true,
+  }
+}
+
 export function migrateGameSessionState(value: unknown): GameSessionState | null {
   if (isGameSessionState(value)) return value
   if (!isRecord(value)) return null
@@ -66,7 +73,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addIntroBattleState(addCoreState(addGroveState(addWaterwayState({
+      expedition: addSumiPracticeState(addIntroBattleState(addCoreState(addGroveState(addWaterwayState({
         ...value.expedition,
         phase:
           value.expedition.phase === 'branch-selected' &&
@@ -75,7 +82,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
             : value.expedition.phase,
         towerBattle: null,
         towerCompleted: false,
-      })))),
+      }))))),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -84,7 +91,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addIntroBattleState(addCoreState(addGroveState(addWaterwayState(value.expedition)))),
+      expedition: addSumiPracticeState(addIntroBattleState(addCoreState(addGroveState(addWaterwayState(value.expedition))))),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -93,7 +100,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addIntroBattleState(addCoreState(addGroveState(value.expedition))),
+      expedition: addSumiPracticeState(addIntroBattleState(addCoreState(addGroveState(value.expedition)))),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -103,7 +110,7 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addIntroBattleState(addCoreState(value.expedition)),
+      expedition: addSumiPracticeState(addIntroBattleState(addCoreState(value.expedition))),
     }
     return isGameSessionState(migrated) ? migrated : null
   }
@@ -112,7 +119,16 @@ export function migrateGameSessionState(value: unknown): GameSessionState | null
     const migrated: unknown = {
       ...value,
       schemaVersion: GAME_SCHEMA_VERSION,
-      expedition: addIntroBattleState(value.expedition),
+      expedition: addSumiPracticeState(addIntroBattleState(value.expedition)),
+    }
+    return isGameSessionState(migrated) ? migrated : null
+  }
+
+  if (value.schemaVersion === 7 && isRecord(value.expedition)) {
+    const migrated: unknown = {
+      ...value,
+      schemaVersion: GAME_SCHEMA_VERSION,
+      expedition: addSumiPracticeState(value.expedition),
     }
     return isGameSessionState(migrated) ? migrated : null
   }

@@ -47,7 +47,7 @@ export function IntroBattlePanel({
   const [activeActor, setActiveActor] = useState<IntroBattleAllyId>('tomoshigoke')
   const [skillOpen, setSkillOpen] = useState(false)
   const battle = state?.expedition.battle
-  if (!battle || !('kind' in battle)) return null
+  if (!battle || !('kind' in battle) || battle.kind !== 'intro-normal') return null
 
   if (battle.outcome === 'victory') {
     return (

@@ -1,6 +1,7 @@
 import type {
   ExpeditionState,
   IntroBattleState,
+  SumiPracticeBattleState,
   TutorialBattleState,
 } from './types'
 
@@ -11,6 +12,7 @@ export function createInitialExpeditionState(): ExpeditionState {
     unlockedNodeIds: ['marsh-entrance'],
     entryObserved: false,
     introBattleCompleted: false,
+    sumiPracticeCompleted: false,
     firstRecruitmentCompleted: false,
     selectedBranchId: null,
     battle: null,
@@ -25,6 +27,39 @@ export function createInitialExpeditionState(): ExpeditionState {
     coreBossBattle: null,
     bossReportChoice: null,
     regionCompleted: false,
+  }
+}
+
+export function createSumiPracticeBattleState(): SumiPracticeBattleState {
+  return {
+    kind: 'sumi-practice',
+    round: 1,
+    enemyHp: 70,
+    enemyMaxHp: 70,
+    allies: {
+      tomoshigoke: {
+        currentHp: 52,
+        maxHp: 72,
+        vitality: 45,
+        polluted: true,
+      },
+      numakuguri: {
+        currentHp: 108,
+        maxHp: 108,
+        vitality: 50,
+        polluted: false,
+      },
+      sumiwatari: {
+        currentHp: 80,
+        maxHp: 80,
+        vitality: 50,
+        polluted: false,
+      },
+    },
+    plans: { tomoshigoke: null, numakuguri: null, sumiwatari: null },
+    clarifyingFlowUsed: false,
+    outcome: 'ongoing',
+    lastLog: ['汚染をまとったキリハネの飛沫が、トモシゴケへ付着しています。'],
   }
 }
 

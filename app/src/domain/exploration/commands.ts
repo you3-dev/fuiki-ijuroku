@@ -1,12 +1,17 @@
 import {
   createGroveEncounterState,
   createIntroBattleState,
+  createSumiPracticeBattleState,
   createTutorialBattleState,
 } from './createInitialExpedition'
 import {
   resolveIntroBattleRound,
   setIntroBattlePlan,
 } from './introBattle'
+import {
+  resolveSumiPracticeRound,
+  setSumiPracticePlan,
+} from './sumiPracticeBattle'
 import { createTowerBattleState, updateTowerBattle } from '../battle/towerBattle'
 import { createWaterwayBattleState, updateWaterwayBattle } from '../battle/waterwayBattle'
 import { createCoreBossBattleState, updateCoreBossBattle } from '../battle/coreBossBattle'
@@ -124,7 +129,8 @@ export function advanceExpedition(
       if (
         expedition.phase !== 'intro-battle' ||
         !expedition.battle ||
-        !('kind' in expedition.battle)
+        !('kind' in expedition.battle) ||
+        expedition.battle.kind !== 'intro-normal'
       ) {
         return unchanged(expedition)
       }
@@ -143,7 +149,8 @@ export function advanceExpedition(
       if (
         expedition.phase !== 'intro-battle' ||
         !expedition.battle ||
-        !('kind' in expedition.battle)
+        !('kind' in expedition.battle) ||
+        expedition.battle.kind !== 'intro-normal'
       ) {
         return unchanged(expedition)
       }
@@ -165,6 +172,7 @@ export function advanceExpedition(
         expedition.phase !== 'intro-result' ||
         !expedition.battle ||
         !('kind' in expedition.battle) ||
+        expedition.battle.kind !== 'intro-normal' ||
         expedition.battle.outcome !== 'victory'
       ) {
         return unchanged(expedition)
@@ -298,7 +306,77 @@ export function advanceExpedition(
     case 'finishRecruitment': {
       if (expedition.phase !== 'recruit-result') return unchanged(expedition)
       return {
-        expedition: { ...expedition, phase: 'branch-choice' },
+        expedition: expedition.sumiPracticeCompleted
+          ? { ...expedition, phase: 'branch-choice' }
+          : {
+              ...expedition,
+              phase: 'sumi-practice',
+              battle: createSumiPracticeBattleState(),
+            },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'setSumiPracticePlan': {
+      if (
+        expedition.phase !== 'sumi-practice' ||
+        !expedition.battle ||
+        !('kind' in expedition.battle) ||
+        expedition.battle.kind !== 'sumi-practice'
+      ) {
+        return unchanged(expedition)
+      }
+      const battle = setSumiPracticePlan(
+        expedition.battle,
+        action.actorId,
+        action.plan,
+      )
+      if (battle === expedition.battle) return unchanged(expedition)
+      return {
+        expedition: { ...expedition, battle },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'resolveSumiPracticeRound': {
+      if (
+        expedition.phase !== 'sumi-practice' ||
+        !expedition.battle ||
+        !('kind' in expedition.battle) ||
+        expedition.battle.kind !== 'sumi-practice'
+      ) {
+        return unchanged(expedition)
+      }
+      const battle = resolveSumiPracticeRound(expedition.battle)
+      if (battle === expedition.battle) return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: battle.outcome === 'victory'
+            ? 'sumi-practice-result'
+            : 'sumi-practice',
+          sumiPracticeCompleted:
+            expedition.sumiPracticeCompleted || battle.outcome === 'victory',
+          battle,
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'finishSumiPractice': {
+      if (
+        expedition.phase !== 'sumi-practice-result' ||
+        !expedition.battle ||
+        !('kind' in expedition.battle) ||
+        expedition.battle.kind !== 'sumi-practice' ||
+        expedition.battle.outcome !== 'victory'
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'branch-choice',
+          sumiPracticeCompleted: true,
+          battle: null,
+        },
         recruitedSumiwatari: false,
       }
     }
@@ -665,6 +743,8 @@ export function advanceExpedition(
         expedition.phase === 'battle' ||
         expedition.phase === 'intro-battle' ||
         expedition.phase === 'intro-result' ||
+        expedition.phase === 'sumi-practice' ||
+        expedition.phase === 'sumi-practice-result' ||
         expedition.phase === 'tower-battle' ||
         expedition.phase === 'tower-result' ||
         expedition.phase === 'waterway-battle' ||

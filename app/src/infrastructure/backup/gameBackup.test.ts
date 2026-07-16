@@ -25,7 +25,7 @@ describe('game backup', () => {
 
     const migrated = parseGameBackup(text)
 
-    expect(migrated.schemaVersion).toBe(7)
+    expect(migrated.schemaVersion).toBe(8)
     expect(migrated.expedition).toMatchObject({
       phase: 'idle',
       currentNodeId: null,
@@ -55,7 +55,7 @@ describe('game backup', () => {
 
     const migrated = parseGameBackup(text)
 
-    expect(migrated.schemaVersion).toBe(7)
+    expect(migrated.schemaVersion).toBe(8)
     expect(migrated.expedition).toMatchObject({
       phase: 'idle',
       towerBattle: null,
@@ -161,10 +161,65 @@ describe('game backup', () => {
     })
 
     const migrated = parseGameBackup(text)
-    expect(migrated.schemaVersion).toBe(7)
+    expect(migrated.schemaVersion).toBe(8)
     expect(migrated.expedition).toMatchObject({
       phase: 'node-choice',
       introBattleCompleted: true,
+    })
+  })
+
+  it('migrates a schema version 7 backup without forcing completed recruitment to replay practice', () => {
+    const current = createInitialGameState(new Date('2026-07-13T00:00:00.000Z'))
+    const {
+      sumiPracticeCompleted: _sumiPracticeCompleted,
+      ...legacyExpedition
+    } = current.expedition
+    const legacyState = {
+      ...current,
+      schemaVersion: 7,
+      party: {
+        ...current.party,
+        front: [
+          current.party.front[0],
+          current.party.front[1],
+          {
+            id: 'creature-sumiwatari-tutorial-001',
+            speciesId: 'sumiwatari',
+            displayName: 'スミワタリ',
+            level: 2,
+            role: '浄化・状態解除',
+            status: 'ready',
+          },
+        ],
+      },
+      expedition: {
+        ...legacyExpedition,
+        phase: 'branch-choice',
+        currentNodeId: 'graymoss-shallows',
+        entryObserved: true,
+        introBattleCompleted: true,
+        firstRecruitmentCompleted: true,
+        unlockedNodeIds: [
+          'marsh-entrance',
+          'graymoss-shallows',
+          'observation-tower',
+          'sunken-waterway',
+        ],
+      },
+    }
+    const text = JSON.stringify({
+      format: 'fuiki-ijuroku-save',
+      backupVersion: 1,
+      schemaVersion: 7,
+      exportedAt: '2026-07-13T01:00:00.000Z',
+      state: legacyState,
+    })
+
+    const migrated = parseGameBackup(text)
+    expect(migrated.schemaVersion).toBe(8)
+    expect(migrated.expedition).toMatchObject({
+      phase: 'branch-choice',
+      sumiPracticeCompleted: true,
     })
   })
 
@@ -185,7 +240,7 @@ describe('game backup', () => {
     const malformed = {
       format: 'fuiki-ijuroku-save',
       backupVersion: 1,
-      schemaVersion: 7,
+      schemaVersion: 8,
       exportedAt: new Date().toISOString(),
       state: {
         ...state,
@@ -203,7 +258,7 @@ describe('game backup', () => {
     const malformed = {
       format: 'fuiki-ijuroku-save',
       backupVersion: 1,
-      schemaVersion: 7,
+      schemaVersion: 8,
       exportedAt: new Date().toISOString(),
       state: {
         ...state,

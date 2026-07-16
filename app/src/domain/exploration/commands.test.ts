@@ -88,4 +88,42 @@ describe('first graymoss expedition', () => {
       expect.arrayContaining(['observation-tower', 'sunken-waterway']),
     )
   })
+
+  it('uses clarifying flow before opening the first branch choice', () => {
+    const recruited = run([
+      ...reachBattle,
+      { type: 'battleAction', action: 'observe' },
+      { type: 'battleAction', action: 'defend' },
+      { type: 'battleAction', action: 'cleanse' },
+      { type: 'battleAction', action: 'calm' },
+      { type: 'battleAction', action: 'requestCooperation' },
+      { type: 'finishRecruitment' },
+    ])
+    expect(recruited.phase).toBe('sumi-practice')
+    expect(recruited.battle).toMatchObject({
+      kind: 'sumi-practice',
+      clarifyingFlowUsed: false,
+    })
+
+    const completed = [
+      { type: 'setSumiPracticePlan', actorId: 'sumiwatari', plan: 'clarifying-flow' },
+      { type: 'setSumiPracticePlan', actorId: 'tomoshigoke', plan: 'attack' },
+      { type: 'setSumiPracticePlan', actorId: 'numakuguri', plan: 'attack' },
+      { type: 'resolveSumiPracticeRound' },
+      { type: 'setSumiPracticePlan', actorId: 'tomoshigoke', plan: 'attack' },
+      { type: 'setSumiPracticePlan', actorId: 'numakuguri', plan: 'attack' },
+      { type: 'setSumiPracticePlan', actorId: 'sumiwatari', plan: 'attack' },
+      { type: 'resolveSumiPracticeRound' },
+      { type: 'finishSumiPractice' },
+    ] as ExplorationAction[]
+    const branchChoice = completed.reduce(
+      (expedition, action) => advanceExpedition(expedition, action).expedition,
+      recruited,
+    )
+    expect(branchChoice).toMatchObject({
+      phase: 'branch-choice',
+      sumiPracticeCompleted: true,
+      battle: null,
+    })
+  })
 })

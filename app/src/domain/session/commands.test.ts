@@ -16,6 +16,18 @@ const completeIntroBattle = [
   { type: 'finishIntroBattle' } as const,
 ]
 
+const completeSumiPractice = [
+  { type: 'setSumiPracticePlan', actorId: 'sumiwatari', plan: 'clarifying-flow' } as const,
+  { type: 'setSumiPracticePlan', actorId: 'tomoshigoke', plan: 'attack' } as const,
+  { type: 'setSumiPracticePlan', actorId: 'numakuguri', plan: 'attack' } as const,
+  { type: 'resolveSumiPracticeRound' } as const,
+  { type: 'setSumiPracticePlan', actorId: 'tomoshigoke', plan: 'attack' } as const,
+  { type: 'setSumiPracticePlan', actorId: 'numakuguri', plan: 'attack' } as const,
+  { type: 'setSumiPracticePlan', actorId: 'sumiwatari', plan: 'attack' } as const,
+  { type: 'resolveSumiPracticeRound' } as const,
+  { type: 'finishSumiPractice' } as const,
+]
+
 describe('executeGameCommand', () => {
   it('records preparation and advances the revision once', () => {
     const initial = createInitialGameState(new Date('2026-07-13T00:00:00.000Z'))
@@ -97,8 +109,12 @@ describe('executeGameCommand', () => {
       type: 'exploration',
       action: { type: 'finishRecruitment' },
     })
+    const practiced = completeSumiPractice.reduce(
+      (state, action) => executeGameCommand(state, { type: 'exploration', action }),
+      returned,
+    )
     const restarted = executeGameCommand(
-      executeGameCommand(returned, {
+      executeGameCommand(practiced, {
         type: 'exploration',
         action: { type: 'returnToLaboratory' },
       }),
@@ -163,6 +179,7 @@ describe('executeGameCommand', () => {
       { type: 'battleAction', action: 'calm' } as const,
       { type: 'battleAction', action: 'requestCooperation' } as const,
       { type: 'finishRecruitment' } as const,
+      ...completeSumiPractice,
       { type: 'enterNode', nodeId: 'observation-tower' } as const,
       { type: 'beginTowerEncounter' } as const,
     ]

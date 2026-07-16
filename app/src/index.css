@@ -3031,6 +3031,207 @@ ul.battle-log {
   color: var(--color-ink-muted);
 }
 
+.sumi-practice-battle {
+  overflow: hidden;
+  border: 1px solid rgb(82 116 119 / 48%);
+  border-radius: 1rem;
+  color: var(--color-ink);
+  background: var(--color-paper-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.sumi-practice-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 7.7rem;
+  padding: 1rem;
+  color: var(--color-paper-raised);
+  background:
+    radial-gradient(circle at 82% 45%, rgb(149 88 75 / 24%), transparent 6rem),
+    linear-gradient(145deg, #2e3935, #1d292b);
+}
+
+.sumi-practice-heading .eyebrow {
+  color: #c3d1c8;
+}
+
+.sumi-practice-heading .specimen-orb {
+  flex: 0 0 4rem;
+  width: 4rem;
+  height: 4rem;
+}
+
+.practice-purpose {
+  display: grid;
+  gap: 0.15rem;
+  border-bottom: 1px solid rgb(82 116 119 / 35%);
+  padding: 0.7rem 1rem;
+  background: #dce8df;
+}
+
+.practice-purpose small {
+  color: var(--color-water);
+  font-weight: 900;
+}
+
+.practice-purpose strong {
+  font-size: 0.92rem;
+}
+
+.practice-purpose span {
+  color: var(--color-ink-muted);
+}
+
+.practice-ally-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.32rem;
+  padding: 0 0.75rem;
+}
+
+.practice-ally-tabs button {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  min-height: 4.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 0.45rem;
+  color: var(--color-ink);
+  text-align: left;
+  background: #ddd7c3;
+}
+
+.practice-ally-tabs button.is-active {
+  border-color: var(--color-moss-deep);
+  box-shadow: inset 0 0 0 1px var(--color-moss-deep);
+  background: #f5f0df;
+}
+
+.practice-ally-tabs button.is-polluted {
+  border-color: var(--color-rust);
+  background: #eadbd2;
+}
+
+.practice-ally-tabs strong,
+.practice-ally-tabs span,
+.practice-ally-tabs small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-ally-tabs strong {
+  font-size: 0.68rem;
+}
+
+.practice-ally-tabs span,
+.practice-ally-tabs small {
+  color: var(--color-ink-muted);
+  font-size: 0.6rem;
+}
+
+.practice-ally-tabs button.is-polluted small {
+  color: var(--color-rust);
+  font-weight: 900;
+}
+
+.practice-active-command {
+  margin: 0.5rem 0.75rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0.65rem;
+  background: #faf6e8;
+}
+
+.practice-skill-list {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.practice-skill-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.12rem 0.5rem;
+  min-height: 3.5rem;
+  border: 1px solid var(--color-water);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  color: var(--color-ink);
+  text-align: left;
+  background: #e5efeb;
+}
+
+.practice-skill-list button span {
+  grid-column: 1;
+  color: var(--color-ink-muted);
+  font-size: 0.68rem;
+}
+
+.practice-skill-list button small {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--color-water);
+  font-weight: 850;
+}
+
+.selected-practice-plan {
+  margin: 0.5rem 0 0;
+  color: var(--color-moss-deep);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.practice-plan-summary {
+  display: grid;
+  gap: 0.22rem;
+  margin: 0.55rem 0.75rem;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 0.55rem;
+}
+
+.practice-plan-summary p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.practice-resolve-button {
+  width: calc(100% - 1.5rem);
+  margin: 0.65rem 0.75rem 0.85rem;
+}
+
+.sumi-practice-result {
+  text-align: center;
+}
+
+.clarifying-flow-summary {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0.9rem 0;
+  border-left: 3px solid var(--color-ancient-glow);
+  padding: 0.7rem;
+  text-align: left;
+  background: #dceae0;
+}
+
+.clarifying-flow-summary small {
+  color: var(--color-water);
+  font-weight: 850;
+}
+
+.clarifying-flow-summary strong {
+  font-size: 1rem;
+}
+
+.clarifying-flow-summary span {
+  color: var(--color-ink-muted);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

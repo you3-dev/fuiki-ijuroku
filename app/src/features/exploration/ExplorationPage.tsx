@@ -12,6 +12,7 @@ import { FilterGrovePanel } from './FilterGrovePanel'
 import { CoreBossBattlePanel } from './CoreBossBattlePanel'
 import { IntroBattlePanel } from './IntroBattlePanel'
 import { SumiwatariRescuePanel } from './SumiwatariRescuePanel'
+import { SumiwatariPracticePanel } from './SumiwatariPracticePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
 const KIRIHANE_ID = 'creature-kirihane-tower-001'
@@ -271,6 +272,11 @@ export function ExplorationPage() {
 
         {expedition.phase === 'battle' && (
           <SumiwatariRescuePanel runAction={runAction} />
+        )}
+
+        {(expedition.phase === 'sumi-practice' ||
+          expedition.phase === 'sumi-practice-result') && (
+          <SumiwatariPracticePanel runAction={runAction} />
         )}
 
         {expedition.phase === 'tower-event' && (
@@ -606,6 +612,8 @@ export function ExplorationPage() {
           'intro-battle',
           'intro-result',
           'recruit-result',
+          'sumi-practice',
+          'sumi-practice-result',
           'branch-selected',
           'tower-battle',
           'tower-result',

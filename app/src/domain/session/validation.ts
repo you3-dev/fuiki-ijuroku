@@ -58,6 +58,8 @@ const EXPEDITION_PHASES: ExpeditionPhase[] = [
   'node-choice',
   'battle',
   'recruit-result',
+  'sumi-practice',
+  'sumi-practice-result',
   'branch-choice',
   'branch-selected',
   'tower-event',
@@ -122,6 +124,38 @@ function isIntroBattle(value: unknown): boolean {
     const plan = value.plans[actorId]
     if (plan !== null && !validPlans[actorId].includes(String(plan))) return false
   }
+  if (!['ongoing', 'victory'].includes(String(value.outcome))) return false
+  if (value.outcome === 'victory' && value.enemyHp !== 0) return false
+  return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
+}
+
+function isSumiPracticeBattle(value: unknown): boolean {
+  if (!isRecord(value) || value.kind !== 'sumi-practice') return false
+  if (!Number.isInteger(value.round) || Number(value.round) < 1) return false
+  if (!isNonNegativeInteger(value.enemyHp) || Number(value.enemyHp) > 70) return false
+  if (value.enemyMaxHp !== 70) return false
+  if (!isRecord(value.allies)) return false
+  const maxHp = { tomoshigoke: 72, numakuguri: 108, sumiwatari: 80 }
+  for (const actorId of ['tomoshigoke', 'numakuguri', 'sumiwatari'] as const) {
+    const ally = value.allies[actorId]
+    if (!isRecord(ally) || ally.maxHp !== maxHp[actorId]) return false
+    if (!isNonNegativeInteger(ally.currentHp) || Number(ally.currentHp) > maxHp[actorId]) {
+      return false
+    }
+    if (!isNonNegativeInteger(ally.vitality) || Number(ally.vitality) > 100) return false
+    if (typeof ally.polluted !== 'boolean') return false
+  }
+  if (!isRecord(value.plans)) return false
+  const validPlans = {
+    tomoshigoke: ['attack', 'defend', 'moss-droplet'],
+    numakuguri: ['attack', 'defend', 'burrow-guard'],
+    sumiwatari: ['attack', 'defend', 'clarifying-flow'],
+  }
+  for (const actorId of ['tomoshigoke', 'numakuguri', 'sumiwatari'] as const) {
+    const plan = value.plans[actorId]
+    if (plan !== null && !validPlans[actorId].includes(String(plan))) return false
+  }
+  if (typeof value.clarifyingFlowUsed !== 'boolean') return false
   if (!['ongoing', 'victory'].includes(String(value.outcome))) return false
   if (value.outcome === 'victory' && value.enemyHp !== 0) return false
   return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
@@ -416,7 +450,9 @@ function isExpeditionState(value: unknown): boolean {
   if (new Set(value.unlockedNodeIds).size !== value.unlockedNodeIds.length) return false
   if (typeof value.entryObserved !== 'boolean') return false
   if (typeof value.introBattleCompleted !== 'boolean') return false
+  if (typeof value.sumiPracticeCompleted !== 'boolean') return false
   if (typeof value.firstRecruitmentCompleted !== 'boolean') return false
+  if (value.sumiPracticeCompleted && !value.firstRecruitmentCompleted) return false
   if (typeof value.towerCompleted !== 'boolean') return false
   if (typeof value.waterwayCompleted !== 'boolean') return false
   if (typeof value.groveCompleted !== 'boolean') return false
@@ -530,10 +566,35 @@ function isExpeditionState(value: unknown): boolean {
         value.towerBattle === null &&
         value.waterwayBattle === null
       )
+    case 'sumi-practice':
+      return (
+        value.currentNodeId === 'graymoss-shallows' &&
+        value.firstRecruitmentCompleted === true &&
+        value.sumiPracticeCompleted === false &&
+        value.unlockedNodeIds.includes('observation-tower') &&
+        value.unlockedNodeIds.includes('sunken-waterway') &&
+        isSumiPracticeBattle(value.battle) &&
+        (value.battle as Record<string, unknown>).outcome === 'ongoing' &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null
+      )
+    case 'sumi-practice-result':
+      return (
+        value.currentNodeId === 'graymoss-shallows' &&
+        value.firstRecruitmentCompleted === true &&
+        value.sumiPracticeCompleted === true &&
+        value.unlockedNodeIds.includes('observation-tower') &&
+        value.unlockedNodeIds.includes('sunken-waterway') &&
+        isSumiPracticeBattle(value.battle) &&
+        (value.battle as Record<string, unknown>).outcome === 'victory' &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null
+      )
     case 'branch-choice':
       return (
         value.currentNodeId === 'graymoss-shallows' &&
         value.firstRecruitmentCompleted === true &&
+        value.sumiPracticeCompleted === true &&
         value.unlockedNodeIds.includes('observation-tower') &&
         value.unlockedNodeIds.includes('sunken-waterway') &&
         value.battle === null &&
