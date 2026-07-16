@@ -17,6 +17,7 @@ import type {
 } from '../../domain/battle/types'
 import type { ExplorationAction } from '../../domain/exploration/types'
 import { BattleCommandMenu } from './BattleCommandMenu'
+import { BattleImpactStrip } from './BattleImpactStrip'
 
 const waterwayTargetIds: WaterwayTargetId[] = [
   'pollution-mass',
@@ -354,8 +355,9 @@ export function WaterwayBattlePanel({
       </p>
 
       {resultSummary.length > 0 && (
-        <section className="tower-round-result" aria-live="polite">
+        <section className="tower-round-result">
           <small>前のラウンド</small>
+          <BattleImpactStrip lines={battle.lastLog} sequence={battle.round} status="行動結果を更新" />
           <ul>{resultSummary.map((line) => <li key={line}>{line}</li>)}</ul>
         </section>
       )}

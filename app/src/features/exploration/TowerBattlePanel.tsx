@@ -13,6 +13,7 @@ import type {
 import type { ExplorationAction } from '../../domain/exploration/types'
 import { useGameSession } from '../../app/GameSessionContext'
 import { BattleCommandMenu } from './BattleCommandMenu'
+import { BattleImpactStrip } from './BattleImpactStrip'
 
 const allySkill = {
   tomoshigoke: 'calming-glimmer',
@@ -263,8 +264,9 @@ export function TowerBattlePanel({
       </div>
 
       {resultSummary.length > 0 && (
-        <section className="tower-round-result" aria-live="polite">
+        <section className="tower-round-result">
           <small>前のラウンド</small>
+          <BattleImpactStrip lines={battle.lastLog} sequence={battle.round} status="行動結果を更新" />
           <ul>{resultSummary.map((line) => <li key={line}>{line}</li>)}</ul>
         </section>
       )}

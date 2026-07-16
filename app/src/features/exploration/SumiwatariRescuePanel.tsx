@@ -6,6 +6,7 @@ import type {
   TutorialBattleState,
 } from '../../domain/exploration/types'
 import { BattleCommandMenu } from './BattleCommandMenu'
+import { BattleImpactStrip } from './BattleImpactStrip'
 
 type RescueAllyId = 'tomoshigoke' | 'numakuguri'
 
@@ -20,6 +21,13 @@ const resultMessages: Record<TutorialBattleState['lastAction'], string> = {
   defended: 'ヌマクグリが濁り水圧を受け止め、安全な処置時間を作りました。',
   cleansed: '汚染が剥がれ、スミワタリの半透明な体表が戻りました。',
   calmed: '静かな明滅に呼吸が合い、スミワタリがこちらを見ています。',
+}
+
+const resultStatus: Partial<Record<TutorialBattleState['lastAction'], string>> = {
+  observed: '原因特定',
+  defended: '処置時間確保',
+  cleansed: '汚染解除',
+  calmed: '鎮静成功',
 }
 
 function currentGoal(battle: TutorialBattleState) {
@@ -133,8 +141,13 @@ export function SumiwatariRescuePanel({
         <figcaption>{battle.polluted ? '汚染・警戒中' : battle.calmed ? '浄化・鎮静済み' : '浄化済み'}</figcaption>
       </figure>
 
-      <section className="rescue-result" role="status">
+      <section className="rescue-result">
         <small>{battle.lastAction === 'encountered' ? '現在の状況' : '行動の結果'}</small>
+        <BattleImpactStrip
+          lines={[]}
+          sequence={battle.round}
+          status={resultStatus[battle.lastAction]}
+        />
         <p>{resultMessages[battle.lastAction]}</p>
       </section>
 

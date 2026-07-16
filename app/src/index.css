@@ -2509,6 +2509,76 @@ ul.battle-log {
   line-height: 1.5;
 }
 
+.battle-impact-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.battle-impact-chip {
+  display: inline-grid;
+  min-height: 1.8rem;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.25rem 0.58rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateY(0.45rem) scale(0.9);
+  animation: battle-impact-pop 360ms cubic-bezier(0.18, 0.82, 0.3, 1.18) forwards;
+  animation-delay: calc(var(--impact-order, 0) * 70ms);
+}
+
+.battle-impact-chip.is-damage {
+  border-color: rgb(153 83 68 / 48%);
+  color: #743f34;
+  background: #f1d9cc;
+}
+
+.battle-impact-chip.is-heal {
+  border-color: rgb(72 112 73 / 45%);
+  color: #355e3c;
+  background: #dcebd8;
+}
+
+.battle-impact-chip.is-cleanse {
+  border-color: rgb(64 123 129 / 48%);
+  color: #315f65;
+  background: #d8ece7;
+}
+
+.battle-impact-chip.is-calm {
+  border-color: rgb(148 118 55 / 44%);
+  color: #6f571f;
+  background: #eee5bf;
+}
+
+.battle-impact-chip.is-status {
+  border-color: var(--color-water);
+  color: var(--color-moss-deep);
+  background: #e0eee7;
+}
+
+@keyframes battle-impact-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(0.45rem) scale(0.9);
+  }
+
+  68% {
+    opacity: 1;
+    transform: translateY(-0.08rem) scale(1.04);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .battle-tutorial-hint {
   margin: 0.65rem 0.8rem;
   border-radius: 0.55rem;

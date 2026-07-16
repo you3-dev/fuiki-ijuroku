@@ -10,6 +10,7 @@ import type {
   SumiPracticePlan,
 } from '../../domain/exploration/types'
 import { BattleCommandMenu } from './BattleCommandMenu'
+import { BattleImpactStrip } from './BattleImpactStrip'
 
 const allyInfo = {
   tomoshigoke: {
@@ -115,8 +116,9 @@ export function SumiwatariPracticePanel({
       </div>
 
       {battle.round > 1 && (
-        <section className="normal-battle-result" aria-live="polite">
+        <section className="normal-battle-result">
           <small>前のラウンド</small>
+          <BattleImpactStrip lines={battle.lastLog} sequence={battle.round} status="行動結果を更新" />
           <ul>{battle.lastLog.map((line) => <li key={line}>{line}</li>)}</ul>
         </section>
       )}
