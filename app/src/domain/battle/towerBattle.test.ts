@@ -56,6 +56,7 @@ describe('observation tower battle', () => {
     expect(battle.calmed).toBe(true)
     expect(battle.combatants.numakuguri.currentHp).toBeLessThan(101)
     expect(battle.combatants.tomoshigoke.currentHp).toBeGreaterThanOrEqual(65)
+    expect(Object.values(battle.plans).every((plan) => plan.kind === 'defend')).toBe(true)
 
     battle = updateTowerBattle(battle, {
       type: 'setSupport',

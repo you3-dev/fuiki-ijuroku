@@ -3228,6 +3228,314 @@ ul.battle-log {
   font-size: 1rem;
 }
 
+.tower-command-battle {
+  overflow: hidden;
+  border: 1px solid rgb(82 116 119 / 48%);
+  border-radius: 1rem;
+  color: var(--color-ink);
+  background: var(--color-paper-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.tower-current-objective {
+  display: grid;
+  gap: 0.12rem;
+  border-bottom: 1px solid rgb(82 116 119 / 35%);
+  padding: 0.7rem 1rem;
+  background: #dce8df;
+}
+
+.tower-current-objective small {
+  color: var(--color-water);
+  font-weight: 900;
+}
+
+.tower-current-objective strong {
+  font-size: 0.94rem;
+}
+
+.tower-current-objective span,
+.tower-risk-note {
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.tower-enemy-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem 0.4rem;
+}
+
+.tower-enemy-status div {
+  display: grid;
+  gap: 0.08rem;
+  border-right: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.tower-enemy-status div:last-child {
+  border-right: 0;
+}
+
+.tower-enemy-status span {
+  color: var(--color-ink-muted);
+  font-size: 0.62rem;
+}
+
+.tower-risk-note {
+  margin: 0;
+  padding: 0 0.75rem 0.55rem;
+  text-align: center;
+}
+
+.tower-command-conditions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0 0.75rem 0.65rem;
+}
+
+.tower-command-conditions span {
+  border: 1px dashed var(--color-border);
+  border-radius: 999px;
+  padding: 0.3rem 0.15rem;
+  color: var(--color-ink-muted);
+  font-size: 0.58rem;
+  text-align: center;
+}
+
+.tower-command-conditions span.is-met {
+  border-style: solid;
+  border-color: var(--color-water);
+  color: var(--color-moss-deep);
+  font-weight: 850;
+  background: rgb(112 192 180 / 16%);
+}
+
+.tower-round-result {
+  margin: 0 0.75rem 0.65rem;
+  border-left: 3px solid var(--color-ancient-glow);
+  padding: 0.55rem 0.65rem;
+  background: #edf0df;
+}
+
+.tower-round-result small {
+  color: var(--color-water);
+  font-weight: 850;
+}
+
+.tower-round-result ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.tower-research-panel {
+  margin: 0 0.75rem 0.6rem;
+  border: 1px solid var(--color-water);
+  border-radius: 0.75rem;
+  background: #e4efea;
+}
+
+.tower-research-toggle {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  width: 100%;
+  min-height: 3.6rem;
+  align-items: center;
+  gap: 0.08rem 0.55rem;
+  border: 0;
+  padding: 0.5rem 0.6rem;
+  color: var(--color-ink);
+  text-align: left;
+  background: transparent;
+}
+
+.tower-research-toggle > span {
+  grid-row: 1 / span 2;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: 900;
+  background: var(--color-water);
+}
+
+.tower-research-toggle small {
+  color: var(--color-ink-muted);
+  font-size: 0.64rem;
+}
+
+.tower-research-actions {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid rgb(82 116 119 / 35%);
+  padding: 0.5rem;
+}
+
+.tower-research-actions button,
+.tower-skill-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.08rem 0.5rem;
+  min-height: 3.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.55rem;
+  color: var(--color-ink);
+  text-align: left;
+  background: #faf6e8;
+}
+
+.tower-research-actions button.is-selected {
+  border-color: var(--color-moss-deep);
+  box-shadow: inset 0 0 0 1px var(--color-moss-deep);
+}
+
+.tower-research-actions button span,
+.tower-skill-list button span {
+  grid-column: 1;
+  color: var(--color-ink-muted);
+  font-size: 0.64rem;
+  line-height: 1.35;
+}
+
+.tower-ally-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.32rem;
+  padding: 0 0.75rem;
+}
+
+.tower-ally-tabs button {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+  min-height: 4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 0.42rem;
+  color: var(--color-ink);
+  text-align: left;
+  background: #ddd7c3;
+}
+
+.tower-ally-tabs button.is-active {
+  border-color: var(--color-moss-deep);
+  box-shadow: inset 0 0 0 1px var(--color-moss-deep);
+  background: #f5f0df;
+}
+
+.tower-ally-tabs strong,
+.tower-ally-tabs span,
+.tower-ally-tabs small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tower-ally-tabs strong {
+  font-size: 0.68rem;
+}
+
+.tower-ally-tabs span,
+.tower-ally-tabs small {
+  color: var(--color-ink-muted);
+  font-size: 0.6rem;
+}
+
+.tower-active-command {
+  margin: 0.5rem 0.75rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0.65rem;
+  background: #faf6e8;
+}
+
+.tower-skill-list {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.tower-skill-list button {
+  border-color: var(--color-water);
+  background: #e5efeb;
+}
+
+.tower-skill-list button small {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--color-water);
+  font-weight: 850;
+}
+
+.tower-plan-summary {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0 0.75rem 0.55rem;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 0.5rem;
+}
+
+.tower-plan-summary p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.tower-strategy-hint {
+  margin: 0 0.75rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  background: rgb(231 224 204 / 48%);
+}
+
+.tower-strategy-hint summary {
+  cursor: pointer;
+  color: var(--color-moss-deep);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.tower-strategy-hint > strong {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.76rem;
+}
+
+.tower-strategy-hint ul {
+  margin: 0.3rem 0;
+  padding-left: 1.15rem;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.tower-strategy-hint div {
+  display: grid;
+  gap: 0.12rem;
+  color: var(--color-water);
+  font-size: 0.65rem;
+}
+
+.tower-resolve-button {
+  width: calc(100% - 1.5rem);
+  margin: 0 0.75rem 0.7rem;
+}
+
+.tower-log-details {
+  margin-inline: 0.75rem;
+}
+
 .clarifying-flow-summary span {
   color: var(--color-ink-muted);
 }

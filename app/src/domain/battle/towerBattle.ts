@@ -288,6 +288,7 @@ function resolveRound(state: TowerBattleState): TowerBattleState {
 
   next.round += 1
   next.mistTurns = Math.max(0, next.mistTurns - 1)
+  next.plans = defaultPlans()
   next.supportPlan = 'none'
   next.phase = 'planning'
   return next
