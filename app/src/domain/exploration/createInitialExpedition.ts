@@ -1,4 +1,8 @@
-import type { ExpeditionState, TutorialBattleState } from './types'
+import type {
+  ExpeditionState,
+  IntroBattleState,
+  TutorialBattleState,
+} from './types'
 
 export function createInitialExpeditionState(): ExpeditionState {
   return {
@@ -6,6 +10,7 @@ export function createInitialExpeditionState(): ExpeditionState {
     currentNodeId: null,
     unlockedNodeIds: ['marsh-entrance'],
     entryObserved: false,
+    introBattleCompleted: false,
     firstRecruitmentCompleted: false,
     selectedBranchId: null,
     battle: null,
@@ -20,6 +25,22 @@ export function createInitialExpeditionState(): ExpeditionState {
     coreBossBattle: null,
     bossReportChoice: null,
     regionCompleted: false,
+  }
+}
+
+export function createIntroBattleState(): IntroBattleState {
+  return {
+    kind: 'intro-normal',
+    round: 1,
+    enemyHp: 62,
+    enemyMaxHp: 62,
+    allies: {
+      tomoshigoke: { currentHp: 72, maxHp: 72, vitality: 40 },
+      numakuguri: { currentHp: 108, maxHp: 108, vitality: 40 },
+    },
+    plans: { tomoshigoke: null, numakuguri: null },
+    outcome: 'ongoing',
+    lastLog: ['若いキリハネが、霧を振り払って進路を塞ぎました。'],
   }
 }
 

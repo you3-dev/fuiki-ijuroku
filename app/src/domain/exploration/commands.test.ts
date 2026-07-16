@@ -13,17 +13,32 @@ function run(actions: ExplorationAction[]) {
 const reachBattle: ExplorationAction[] = [
   { type: 'startExpedition' },
   { type: 'observeEntrance' },
+  { type: 'setIntroBattlePlan', actorId: 'tomoshigoke', plan: 'attack' },
+  { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'defend' },
+  { type: 'resolveIntroBattleRound' },
+  { type: 'setIntroBattlePlan', actorId: 'tomoshigoke', plan: 'attack' },
+  { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'attack' },
+  { type: 'resolveIntroBattleRound' },
+  { type: 'setIntroBattlePlan', actorId: 'tomoshigoke', plan: 'attack' },
+  { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'attack' },
+  { type: 'resolveIntroBattleRound' },
+  { type: 'finishIntroBattle' },
   { type: 'enterNode', nodeId: 'graymoss-shallows' },
 ]
 
 describe('first graymoss expedition', () => {
-  it('unlocks the shallows only after observing at the entrance', () => {
+  it('opens a normal battle after observing and unlocks the shallows after victory', () => {
     const started = run([{ type: 'startExpedition' }])
     expect(started.unlockedNodeIds).not.toContain('graymoss-shallows')
 
     const observed = advanceExpedition(started, { type: 'observeEntrance' }).expedition
-    expect(observed.unlockedNodeIds).toContain('graymoss-shallows')
-    expect(observed.phase).toBe('node-choice')
+    expect(observed.unlockedNodeIds).not.toContain('graymoss-shallows')
+    expect(observed.phase).toBe('intro-battle')
+
+    const completed = run(reachBattle.slice(0, -1))
+    expect(completed.phase).toBe('node-choice')
+    expect(completed.introBattleCompleted).toBe(true)
+    expect(completed.unlockedNodeIds).toContain('graymoss-shallows')
   })
 
   it('starts the tutorial encounter with vigilance 60 and pollution', () => {
@@ -46,7 +61,11 @@ describe('first graymoss expedition', () => {
       { type: 'battleAction', action: 'calm' },
     ]
     const expedition = run(actions)
-    expect(expedition.battle && canRequestCooperation(expedition.battle)).toBe(true)
+    expect(
+      expedition.battle &&
+      !('kind' in expedition.battle) &&
+      canRequestCooperation(expedition.battle),
+    ).toBe(true)
     expect(expedition.battle).toMatchObject({ vigilance: 20, polluted: false, calmed: true })
   })
 

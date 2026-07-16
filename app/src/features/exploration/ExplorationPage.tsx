@@ -11,6 +11,7 @@ import { TowerBattlePanel } from './TowerBattlePanel'
 import { WaterwayBattlePanel } from './WaterwayBattlePanel'
 import { FilterGrovePanel } from './FilterGrovePanel'
 import { CoreBossBattlePanel } from './CoreBossBattlePanel'
+import { IntroBattlePanel } from './IntroBattlePanel'
 
 const SUMIWATARI_ID = 'creature-sumiwatari-tutorial-001'
 const KIRIHANE_ID = 'creature-kirihane-tower-001'
@@ -45,7 +46,7 @@ function BattlePanel({
 }) {
   const { state } = useGameSession()
   const battle = state?.expedition.battle
-  if (!battle) return null
+  if (!battle || 'kind' in battle) return null
 
   const cooperationReady = canRequestCooperation(battle)
   const tutorialStep = !battle.observed
@@ -439,6 +440,10 @@ export function ExplorationPage() {
           </section>
         )}
 
+        {(expedition.phase === 'intro-battle' || expedition.phase === 'intro-result') && (
+          <IntroBattlePanel runAction={runAction} />
+        )}
+
         {expedition.phase === 'battle' && <BattlePanel runAction={runAction} />}
 
         {expedition.phase === 'tower-event' && (
@@ -771,6 +776,8 @@ export function ExplorationPage() {
 
         {![
           'battle',
+          'intro-battle',
+          'intro-result',
           'recruit-result',
           'branch-selected',
           'tower-battle',

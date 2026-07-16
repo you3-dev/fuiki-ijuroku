@@ -41,7 +41,6 @@ export function LaboratoryHomePage() {
 
   const unreadUpdates = state.researchUpdates.filter((update) => !update.acknowledged)
   const isBeforeFirstRecruit = !state.expedition.firstRecruitmentCompleted
-  const isFirstBriefing = isBeforeFirstRecruit && !state.objective.preparationRecorded
 
   return (
     <div className="page-stack">
@@ -54,16 +53,6 @@ export function LaboratoryHomePage() {
             : '生物の反応を先に見る。記録は、その後に結論を出すためにある。'}
         </p>
       </section>
-
-      {isBeforeFirstRecruit && (
-        <section className="mission-guide" aria-label="次にすること">
-          <span className="guide-step">{isFirstBriefing ? '1' : '2'}</span>
-          <div>
-            <small>次にすること</small>
-            <strong>{isFirstBriefing ? '同行する異獣を確認する' : '灰苔湿原へ出発する'}</strong>
-          </div>
-        </section>
-      )}
 
       <section className={`paper-card objective-card ${isBeforeFirstRecruit ? 'tutorial-focus' : ''}`} aria-labelledby="current-objective">
         <div className="card-heading-row">
@@ -84,25 +73,42 @@ export function LaboratoryHomePage() {
             <strong>{state.objective.valvesRestored}/{state.objective.valvesTotal}</strong>
           </div>
         </div>
-        {!state.objective.preparationRecorded ? (
-          <button className="primary-button full-button" type="button" onClick={() => runCommand({ type: 'recordPreparation' })}>
-            同行個体を確認する
-          </button>
-        ) : (
-          <button className="primary-button full-button" type="button" onClick={() => void startExpedition().catch(() => undefined)}>
-            {state.expedition.phase !== 'idle'
-              ? '調査を再開する'
-              : state.expedition.regionCompleted
-                ? '地域調査完了を確認する'
-                : state.expedition.groveCompleted
-                ? '浄化施設中枢へ向かう'
-                : state.expedition.towerCompleted && state.expedition.waterwayCompleted
-                  ? '濾過樹群へ向かう'
-              : state.expedition.firstRecruitmentCompleted
-                ? '分岐調査へ出発する'
-                : '灰苔湿原へ出発する'}
-          </button>
+        {isBeforeFirstRecruit && (
+          <div className="briefing-party-summary" aria-label="最初の同行個体">
+            <div><span aria-hidden="true">灯</span><p><strong>トモシゴケ</strong><small>回復役</small></p></div>
+            <div><span aria-hidden="true">沼</span><p><strong>ヌマクグリ</strong><small>防御役</small></p></div>
+          </div>
         )}
+        {isBeforeFirstRecruit && (
+          <details className="briefing-skills">
+            <summary>同行個体の特技を見る</summary>
+            <div>
+              <section>
+                <strong>トモシゴケ</strong>
+                <p><b>灯苔の雫</b><span>味方1体を回復　活性25</span></p>
+                <p><b>静かな明滅</b><span>敵1体を鎮める　活性20</span></p>
+              </section>
+              <section>
+                <strong>ヌマクグリ</strong>
+                <p><b>身代わり潜行</b><span>味方1体をかばう　活性20</span></p>
+                <p><b>泥幕</b><span>敵の動きを鈍らせる　活性25</span></p>
+              </section>
+            </div>
+          </details>
+        )}
+        <button className="primary-button full-button" type="button" onClick={() => void startExpedition().catch(() => undefined)}>
+          {state.expedition.phase !== 'idle'
+            ? '調査を再開する'
+            : state.expedition.regionCompleted
+              ? '地域調査完了を確認する'
+              : state.expedition.groveCompleted
+              ? '浄化施設中枢へ向かう'
+              : state.expedition.towerCompleted && state.expedition.waterwayCompleted
+                ? '濾過樹群へ向かう'
+            : state.expedition.firstRecruitmentCompleted
+              ? '分岐調査へ出発する'
+              : '灰苔湿原へ出発する'}
+        </button>
         {!isBeforeFirstRecruit && (
           <p className="helper-text">
             地点イベントと確定済みラウンドはIndexedDBへ自動保存されます。

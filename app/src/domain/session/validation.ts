@@ -53,6 +53,8 @@ const REGION_NODE_IDS: RegionNodeId[] = [
 const EXPEDITION_PHASES: ExpeditionPhase[] = [
   'idle',
   'entrance',
+  'intro-battle',
+  'intro-result',
   'node-choice',
   'battle',
   'recruit-result',
@@ -94,6 +96,35 @@ function isTutorialBattle(value: unknown): boolean {
   return ['encountered', 'observed', 'defended', 'cleansed', 'calmed'].includes(
     String(value.lastAction),
   )
+}
+
+function isIntroBattle(value: unknown): boolean {
+  if (!isRecord(value) || value.kind !== 'intro-normal') return false
+  if (!Number.isInteger(value.round) || Number(value.round) < 1) return false
+  if (!isNonNegativeInteger(value.enemyHp) || Number(value.enemyHp) > 62) return false
+  if (value.enemyMaxHp !== 62) return false
+  if (!isRecord(value.allies)) return false
+  const maxHp = { tomoshigoke: 72, numakuguri: 108 }
+  for (const actorId of ['tomoshigoke', 'numakuguri'] as const) {
+    const ally = value.allies[actorId]
+    if (!isRecord(ally) || ally.maxHp !== maxHp[actorId]) return false
+    if (!isNonNegativeInteger(ally.currentHp) || Number(ally.currentHp) > maxHp[actorId]) {
+      return false
+    }
+    if (!isNonNegativeInteger(ally.vitality) || Number(ally.vitality) > 100) return false
+  }
+  if (!isRecord(value.plans)) return false
+  const validPlans = {
+    tomoshigoke: ['attack', 'defend', 'moss-droplet', 'calming-glimmer'],
+    numakuguri: ['attack', 'defend', 'burrow-guard', 'mud-screen'],
+  }
+  for (const actorId of ['tomoshigoke', 'numakuguri'] as const) {
+    const plan = value.plans[actorId]
+    if (plan !== null && !validPlans[actorId].includes(String(plan))) return false
+  }
+  if (!['ongoing', 'victory'].includes(String(value.outcome))) return false
+  if (value.outcome === 'victory' && value.enemyHp !== 0) return false
+  return Array.isArray(value.lastLog) && value.lastLog.every((line) => typeof line === 'string')
 }
 
 const COMBATANT_IDS: CombatantId[] = [
@@ -384,6 +415,7 @@ function isExpeditionState(value: unknown): boolean {
   if (!value.unlockedNodeIds.every(isRegionNodeId)) return false
   if (new Set(value.unlockedNodeIds).size !== value.unlockedNodeIds.length) return false
   if (typeof value.entryObserved !== 'boolean') return false
+  if (typeof value.introBattleCompleted !== 'boolean') return false
   if (typeof value.firstRecruitmentCompleted !== 'boolean') return false
   if (typeof value.towerCompleted !== 'boolean') return false
   if (typeof value.waterwayCompleted !== 'boolean') return false
@@ -452,15 +484,37 @@ function isExpeditionState(value: unknown): boolean {
       return (
         value.currentNodeId === 'marsh-entrance' &&
         value.entryObserved === true &&
+        value.introBattleCompleted === true &&
         value.unlockedNodeIds.includes('graymoss-shallows') &&
         value.firstRecruitmentCompleted === false &&
         value.battle === null &&
         value.towerBattle === null &&
         value.waterwayBattle === null
       )
+    case 'intro-battle':
+      return (
+        value.currentNodeId === 'marsh-entrance' &&
+        value.entryObserved === true &&
+        value.introBattleCompleted === false &&
+        isIntroBattle(value.battle) &&
+        (value.battle as Record<string, unknown>).outcome === 'ongoing' &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null
+      )
+    case 'intro-result':
+      return (
+        value.currentNodeId === 'marsh-entrance' &&
+        value.entryObserved === true &&
+        value.introBattleCompleted === true &&
+        isIntroBattle(value.battle) &&
+        (value.battle as Record<string, unknown>).outcome === 'victory' &&
+        value.towerBattle === null &&
+        value.waterwayBattle === null
+      )
     case 'battle':
       return (
         value.currentNodeId === 'graymoss-shallows' &&
+        value.introBattleCompleted === true &&
         value.firstRecruitmentCompleted === false &&
         isTutorialBattle(value.battle) &&
         value.towerBattle === null &&

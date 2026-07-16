@@ -3,9 +3,12 @@ import { useGameSession } from '../../app/GameSessionContext'
 export function BestiaryPage() {
   const { state } = useGameSession()
   if (!state) return null
+  const activeBattle = state.expedition.battle
   const sumiwatariObserved =
-    state.expedition.firstRecruitmentCompleted || Boolean(state.expedition.battle?.observed)
+    state.expedition.firstRecruitmentCompleted ||
+    Boolean(activeBattle && !('kind' in activeBattle) && activeBattle.observed)
   const kirihaneObserved =
+    state.expedition.introBattleCompleted ||
     state.expedition.towerCompleted ||
     state.expedition.phase === 'tower-result' ||
     Boolean(state.expedition.towerBattle?.callObserved)

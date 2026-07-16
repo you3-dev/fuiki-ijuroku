@@ -9,6 +9,8 @@ export type RegionNodeId =
 export type ExpeditionPhase =
   | 'idle'
   | 'entrance'
+  | 'intro-battle'
+  | 'intro-result'
   | 'node-choice'
   | 'battle'
   | 'recruit-result'
@@ -47,6 +49,27 @@ export type TutorialBattleState = {
     | 'calmed'
 }
 
+export type IntroBattleAllyId = 'tomoshigoke' | 'numakuguri'
+
+export type IntroBattlePlan =
+  | 'attack'
+  | 'defend'
+  | 'moss-droplet'
+  | 'calming-glimmer'
+  | 'burrow-guard'
+  | 'mud-screen'
+
+export type IntroBattleState = {
+  kind: 'intro-normal'
+  round: number
+  enemyHp: number
+  enemyMaxHp: number
+  allies: Record<IntroBattleAllyId, { currentHp: number; maxHp: number; vitality: number }>
+  plans: Record<IntroBattleAllyId, IntroBattlePlan | null>
+  outcome: 'ongoing' | 'victory'
+  lastLog: string[]
+}
+
 export type GroveEncounterState = {
   round: number
   vigilance: number
@@ -72,9 +95,10 @@ export type ExpeditionState = {
   currentNodeId: RegionNodeId | null
   unlockedNodeIds: RegionNodeId[]
   entryObserved: boolean
+  introBattleCompleted: boolean
   firstRecruitmentCompleted: boolean
   selectedBranchId: 'observation-tower' | 'sunken-waterway' | null
-  battle: TutorialBattleState | null
+  battle: TutorialBattleState | IntroBattleState | null
   towerBattle: TowerBattleState | null
   towerCompleted: boolean
   waterwayApproach: WaterwayApproach | null
@@ -91,6 +115,13 @@ export type ExpeditionState = {
 export type ExplorationAction =
   | { type: 'startExpedition' }
   | { type: 'observeEntrance' }
+  | {
+      type: 'setIntroBattlePlan'
+      actorId: IntroBattleAllyId
+      plan: IntroBattlePlan
+    }
+  | { type: 'resolveIntroBattleRound' }
+  | { type: 'finishIntroBattle' }
   | { type: 'enterNode'; nodeId: RegionNodeId }
   | {
       type: 'battleAction'

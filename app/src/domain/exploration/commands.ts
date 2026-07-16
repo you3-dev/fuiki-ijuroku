@@ -1,7 +1,12 @@
 import {
   createGroveEncounterState,
+  createIntroBattleState,
   createTutorialBattleState,
 } from './createInitialExpedition'
+import {
+  resolveIntroBattleRound,
+  setIntroBattlePlan,
+} from './introBattle'
 import { createTowerBattleState, updateTowerBattle } from '../battle/towerBattle'
 import { createWaterwayBattleState, updateWaterwayBattle } from '../battle/waterwayBattle'
 import { createCoreBossBattleState, updateCoreBossBattle } from '../battle/coreBossBattle'
@@ -103,8 +108,73 @@ export function advanceExpedition(
       return {
         expedition: {
           ...expedition,
-          phase: 'node-choice',
+          phase: expedition.introBattleCompleted ? 'node-choice' : 'intro-battle',
           entryObserved: true,
+          battle: expedition.introBattleCompleted
+            ? null
+            : createIntroBattleState(),
+          unlockedNodeIds: expedition.introBattleCompleted
+            ? unlock(expedition, ['graymoss-shallows'])
+            : expedition.unlockedNodeIds,
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'setIntroBattlePlan': {
+      if (
+        expedition.phase !== 'intro-battle' ||
+        !expedition.battle ||
+        !('kind' in expedition.battle)
+      ) {
+        return unchanged(expedition)
+      }
+      const battle = setIntroBattlePlan(
+        expedition.battle,
+        action.actorId,
+        action.plan,
+      )
+      if (battle === expedition.battle) return unchanged(expedition)
+      return {
+        expedition: { ...expedition, battle },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'resolveIntroBattleRound': {
+      if (
+        expedition.phase !== 'intro-battle' ||
+        !expedition.battle ||
+        !('kind' in expedition.battle)
+      ) {
+        return unchanged(expedition)
+      }
+      const battle = resolveIntroBattleRound(expedition.battle)
+      if (battle === expedition.battle) return unchanged(expedition)
+      return {
+        expedition: {
+          ...expedition,
+          phase: battle.outcome === 'victory' ? 'intro-result' : 'intro-battle',
+          introBattleCompleted:
+            expedition.introBattleCompleted || battle.outcome === 'victory',
+          battle,
+        },
+        recruitedSumiwatari: false,
+      }
+    }
+    case 'finishIntroBattle': {
+      if (
+        expedition.phase !== 'intro-result' ||
+        !expedition.battle ||
+        !('kind' in expedition.battle) ||
+        expedition.battle.outcome !== 'victory'
+      ) {
+        return unchanged(expedition)
+      }
+      return {
+        expedition: {
+          ...expedition,
+          phase: 'node-choice',
+          introBattleCompleted: true,
+          battle: null,
           unlockedNodeIds: unlock(expedition, ['graymoss-shallows']),
         },
         recruitedSumiwatari: false,
@@ -151,7 +221,9 @@ export function advanceExpedition(
     }
     case 'battleAction': {
       const battle = expedition.battle
-      if (expedition.phase !== 'battle' || !battle) return unchanged(expedition)
+      if (expedition.phase !== 'battle' || !battle || 'kind' in battle) {
+        return unchanged(expedition)
+      }
       switch (action.action) {
         case 'observe':
           if (battle.observed) return unchanged(expedition)
@@ -591,6 +663,8 @@ export function advanceExpedition(
     case 'returnToLaboratory': {
       if (
         expedition.phase === 'battle' ||
+        expedition.phase === 'intro-battle' ||
+        expedition.phase === 'intro-result' ||
         expedition.phase === 'tower-battle' ||
         expedition.phase === 'tower-result' ||
         expedition.phase === 'waterway-battle' ||

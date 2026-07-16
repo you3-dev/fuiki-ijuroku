@@ -182,7 +182,6 @@ export function executeGameCommand(
       ) {
         const activeFront = state.party.front.filter((creature) => creature !== null)
         if (
-          !state.objective.preparationRecorded ||
           activeFront.length !== 2 ||
           state.party.front[2] !== null
         ) {
@@ -284,7 +283,11 @@ export function executeGameCommand(
         }
       }
 
-      let objective = state.objective
+      let objective =
+        command.action.type === 'startExpedition' &&
+        !state.objective.preparationRecorded
+          ? { ...state.objective, preparationRecorded: true }
+          : state.objective
       if (transition.completedTower) {
         objective = {
           ...objective,

@@ -3,6 +3,19 @@ import { executeGameCommand } from './commands'
 import { createInitialGameState } from './createInitialState'
 import type { CoreBossBattleCommand } from '../battle/types'
 
+const completeIntroBattle = [
+  { type: 'setIntroBattlePlan', actorId: 'tomoshigoke', plan: 'attack' } as const,
+  { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'defend' } as const,
+  { type: 'resolveIntroBattleRound' } as const,
+  { type: 'setIntroBattlePlan', actorId: 'tomoshigoke', plan: 'attack' } as const,
+  { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'attack' } as const,
+  { type: 'resolveIntroBattleRound' } as const,
+  { type: 'setIntroBattlePlan', actorId: 'tomoshigoke', plan: 'attack' } as const,
+  { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'attack' } as const,
+  { type: 'resolveIntroBattleRound' } as const,
+  { type: 'finishIntroBattle' } as const,
+]
+
 describe('executeGameCommand', () => {
   it('records preparation and advances the revision once', () => {
     const initial = createInitialGameState(new Date('2026-07-13T00:00:00.000Z'))
@@ -47,6 +60,7 @@ describe('executeGameCommand', () => {
     const actions = [
       { type: 'startExpedition' } as const,
       { type: 'observeEntrance' } as const,
+      ...completeIntroBattle,
       { type: 'enterNode', nodeId: 'graymoss-shallows' } as const,
       { type: 'battleAction', action: 'observe' } as const,
       { type: 'battleAction', action: 'defend' } as const,
@@ -100,21 +114,21 @@ describe('executeGameCommand', () => {
     ).toHaveLength(1)
   })
 
-  it('does not start the first expedition without preparation and an open third front slot', () => {
+  it('starts without a read-only preparation gate but still requires an open third front slot', () => {
     const initial = createInitialGameState()
-    const withoutPreparation = executeGameCommand(initial, {
+    const started = executeGameCommand(initial, {
       type: 'exploration',
       action: { type: 'startExpedition' },
     })
-    expect(withoutPreparation).toBe(initial)
+    expect(started.expedition.phase).toBe('entrance')
+    expect(started.objective.preparationRecorded).toBe(true)
 
-    const prepared = executeGameCommand(initial, { type: 'recordPreparation' })
     const fullFront = {
-      ...prepared,
+      ...initial,
       party: {
-        ...prepared.party,
+        ...initial.party,
         front: [
-          ...prepared.party.front.slice(0, 2),
+          ...initial.party.front.slice(0, 2),
           {
             id: 'creature-blocking-slot',
             speciesId: 'other',
@@ -141,6 +155,7 @@ describe('executeGameCommand', () => {
     const firstLoop = [
       { type: 'startExpedition' } as const,
       { type: 'observeEntrance' } as const,
+      ...completeIntroBattle,
       { type: 'enterNode', nodeId: 'graymoss-shallows' } as const,
       { type: 'battleAction', action: 'observe' } as const,
       { type: 'battleAction', action: 'defend' } as const,
