@@ -6,6 +6,13 @@ export type BattleImpact = {
   announcement: string
 }
 
+export type BattleRelationCue = {
+  kind: 'protect'
+  actor: string
+  target: string
+  announcement: string
+}
+
 function numericImpact(
   kind: BattleImpactKind,
   metric: string,
@@ -75,4 +82,32 @@ export function extractBattleImpacts(lines: string[]): BattleImpact[] {
   }
 
   return impacts.slice(0, 4)
+}
+
+export function extractBattleRelationCue(lines: string[]): BattleRelationCue | null {
+  for (const line of lines) {
+    const targetedProtection = line.match(/^(.+?)(?:が|は)(.+?)をかば(?:います|う|った)/)
+    if (targetedProtection) {
+      const [, actor, target] = targetedProtection
+      return {
+        kind: 'protect',
+        actor,
+        target,
+        announcement: `${actor}が${target}をかばう`,
+      }
+    }
+
+    const burrowGuard = line.match(/^(.+?)が身代わり潜行で仲間の前へ出た/)
+    if (burrowGuard) {
+      const actor = burrowGuard[1]
+      return {
+        kind: 'protect',
+        actor,
+        target: '仲間',
+        announcement: `${actor}が仲間をかばう`,
+      }
+    }
+  }
+
+  return null
 }

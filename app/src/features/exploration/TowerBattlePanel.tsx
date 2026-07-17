@@ -15,6 +15,7 @@ import { useGameSession } from '../../app/GameSessionContext'
 import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
+import { AllyStateBadge } from './AllyStateBadge'
 
 const allySkill = {
   tomoshigoke: 'calming-glimmer',
@@ -338,6 +339,7 @@ export function TowerBattlePanel({
       <div className="tower-ally-tabs" role="tablist" aria-label="前衛3体">
         {allyIds.map((actorId) => {
           const unit = battle.combatants[actorId]
+          const plan = battle.plans[actorId]
           return (
             <button
               key={actorId}
@@ -361,7 +363,13 @@ export function TowerBattlePanel({
                   decorative
                 />
               </span>
-              <small>予定：{planNames[battle.plans[actorId].kind]}</small>
+              {plan.kind === 'defend' ? (
+                <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
+              ) : actorId === 'numakuguri' && plan.kind === 'skill' ? (
+                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+              ) : (
+                <small>予定：{planNames[plan.kind]}</small>
+              )}
             </button>
           )
         })}

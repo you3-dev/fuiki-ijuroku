@@ -19,6 +19,7 @@ import type { ExplorationAction } from '../../domain/exploration/types'
 import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
+import { AllyStateBadge } from './AllyStateBadge'
 
 const waterwayTargetIds: WaterwayTargetId[] = [
   'pollution-mass',
@@ -405,13 +406,14 @@ export function WaterwayBattlePanel({
       <div className="tower-ally-tabs" role="tablist" aria-label="前衛3体">
         {allyIds.map((actorId) => {
           const unit = battle.allies[actorId]
+          const plan = battle.plans[actorId]
           return (
             <button
               key={actorId}
               type="button"
               role="tab"
               aria-selected={activeActor === actorId}
-              className={activeActor === actorId ? 'is-active' : undefined}
+              className={`${activeActor === actorId ? 'is-active' : ''} ${unit.pollution > 0 ? 'is-polluted' : ''}`}
               onClick={() => {
                 setActiveActor(actorId)
                 setSkillOpen(false)
@@ -429,7 +431,15 @@ export function WaterwayBattlePanel({
                   decorative
                 />
               </span>
-              <small>{unit.pollution > 0 ? `汚染${unit.pollution}` : `予定：${planNames[battle.plans[actorId].kind]}`}</small>
+              {unit.pollution > 0 ? (
+                <AllyStateBadge tone="pollution">汚染 {unit.pollution}</AllyStateBadge>
+              ) : plan.kind === 'defend' ? (
+                <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
+              ) : actorId === 'numakuguri' && plan.kind === 'skill' ? (
+                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+              ) : (
+                <small>予定：{planNames[plan.kind]}</small>
+              )}
             </button>
           )
         })}

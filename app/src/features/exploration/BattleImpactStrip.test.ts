@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractBattleImpacts } from './battleImpact'
+import { extractBattleImpacts, extractBattleRelationCue } from './battleImpact'
 
 describe('battle impact feedback', () => {
   it('extracts damage and healing from normal battle logs', () => {
@@ -38,5 +38,25 @@ describe('battle impact feedback', () => {
     ])).toEqual([
       { kind: 'cleanse', label: '汚染解除', announcement: '汚染を解除' },
     ])
+  })
+
+  it('extracts a named protection relationship', () => {
+    expect(extractBattleRelationCue([
+      'ヌマクグリがトモシゴケをかばいます。',
+    ])).toEqual({
+      kind: 'protect',
+      actor: 'ヌマクグリ',
+      target: 'トモシゴケ',
+      announcement: 'ヌマクグリがトモシゴケをかばう',
+    })
+  })
+
+  it('shows the tutorial guard as protecting the party', () => {
+    expect(extractBattleRelationCue([
+      'ヌマクグリが身代わり潜行で仲間の前へ出た。',
+    ])).toMatchObject({
+      actor: 'ヌマクグリ',
+      target: '仲間',
+    })
   })
 })

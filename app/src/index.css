@@ -2650,6 +2650,67 @@ ul.battle-log {
   margin-top: 0.4rem;
 }
 
+.battle-impact-feedback {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.battle-relation-cue {
+  display: grid;
+  grid-template-columns: minmax(0, auto) 1.55rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 0.4rem;
+  border: 1px solid rgb(67 104 84 / 40%);
+  border-radius: 0.55rem;
+  padding: 0.32rem 0.52rem;
+  color: #355747;
+  font-size: 0.7rem;
+  background: linear-gradient(90deg, #e6efe2, #f4f0db);
+  opacity: 0;
+  transform: translateX(-0.6rem);
+  animation: battle-relation-enter 420ms cubic-bezier(0.18, 0.82, 0.3, 1.12) forwards;
+}
+
+.battle-relation-cue strong,
+.battle-relation-cue > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.battle-relation-shield {
+  display: inline-grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  place-items: center;
+  border-radius: 48% 48% 58% 58%;
+  color: #fff9e6;
+  font-size: 0.66rem;
+  font-weight: 950;
+  background: #52705d;
+  box-shadow: 0 0.18rem 0.35rem rgb(47 78 59 / 24%);
+}
+
+@keyframes battle-relation-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(-0.6rem);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translateX(0.08rem);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .battle-impact-chip {
   display: inline-grid;
   min-height: 1.8rem;
@@ -2711,6 +2772,39 @@ ul.battle-log {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+.ally-state-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 1.18rem !important;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.08rem 0.38rem;
+  font-size: 0.56rem !important;
+  font-weight: 900 !important;
+  line-height: 1.1;
+}
+
+.ally-state-badge.is-pollution {
+  border-color: rgb(142 75 58 / 38%);
+  color: #7d4337 !important;
+  background: #f1d8ca;
+}
+
+.ally-state-badge.is-guard {
+  border-color: rgb(67 98 110 / 36%);
+  color: #3c5e69 !important;
+  background: #dce8e6;
+}
+
+.ally-state-badge.is-protect {
+  border-color: rgb(67 104 84 / 38%);
+  color: #355747 !important;
+  background: #dfeadc;
 }
 
 .battle-tutorial-hint {
@@ -3689,6 +3783,11 @@ ul.battle-log {
   border-color: var(--color-moss-deep);
   box-shadow: inset 0 0 0 1px var(--color-moss-deep);
   background: #f5f0df;
+}
+
+.tower-ally-tabs button.is-polluted {
+  border-color: var(--color-rust);
+  background: #eadbd2;
 }
 
 .tower-ally-tabs strong,

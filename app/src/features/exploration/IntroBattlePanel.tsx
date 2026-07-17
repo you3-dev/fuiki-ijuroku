@@ -9,6 +9,7 @@ import type {
 import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
+import { AllyStateBadge } from './AllyStateBadge'
 
 const allyInfo = {
   tomoshigoke: {
@@ -133,6 +134,7 @@ export function IntroBattlePanel({
       <div className="intro-ally-tabs" role="tablist" aria-label="行動する仲間">
         {(Object.keys(allyInfo) as IntroBattleAllyId[]).map((actorId) => {
           const member = battle.allies[actorId]
+          const plan = battle.plans[actorId]
           return (
             <button
               key={actorId}
@@ -156,7 +158,13 @@ export function IntroBattlePanel({
                   decorative
                 />
               </span>
-              <small>{battle.plans[actorId] ? `予定：${planNames[battle.plans[actorId]]}` : allyInfo[actorId].role}</small>
+              {plan === 'defend' ? (
+                <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
+              ) : actorId === 'numakuguri' && plan === 'burrow-guard' ? (
+                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+              ) : (
+                <small>{plan ? `予定：${planNames[plan]}` : allyInfo[actorId].role}</small>
+              )}
             </button>
           )
         })}
