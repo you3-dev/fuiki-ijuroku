@@ -83,7 +83,7 @@ export function IntroBattlePanel({
           type="button"
           onClick={() => void runAction({ type: 'finishIntroBattle' })}
         >
-          異常反応を追う
+          異常反応を追って浅瀬へ
         </button>
       </section>
     )

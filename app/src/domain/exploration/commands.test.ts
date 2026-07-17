@@ -23,7 +23,6 @@ const reachBattle: ExplorationAction[] = [
   { type: 'setIntroBattlePlan', actorId: 'numakuguri', plan: 'attack' },
   { type: 'resolveIntroBattleRound' },
   { type: 'finishIntroBattle' },
-  { type: 'enterNode', nodeId: 'graymoss-shallows' },
 ]
 
 describe('first graymoss expedition', () => {
@@ -35,8 +34,9 @@ describe('first graymoss expedition', () => {
     expect(observed.unlockedNodeIds).not.toContain('graymoss-shallows')
     expect(observed.phase).toBe('intro-battle')
 
-    const completed = run(reachBattle.slice(0, -1))
-    expect(completed.phase).toBe('node-choice')
+    const completed = run(reachBattle)
+    expect(completed.phase).toBe('battle')
+    expect(completed.currentNodeId).toBe('graymoss-shallows')
     expect(completed.introBattleCompleted).toBe(true)
     expect(completed.unlockedNodeIds).toContain('graymoss-shallows')
   })

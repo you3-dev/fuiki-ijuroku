@@ -180,9 +180,10 @@ export function advanceExpedition(
       return {
         expedition: {
           ...expedition,
-          phase: 'node-choice',
+          phase: 'battle',
+          currentNodeId: 'graymoss-shallows',
           introBattleCompleted: true,
-          battle: null,
+          battle: createTutorialBattleState(),
           unlockedNodeIds: unlock(expedition, ['graymoss-shallows']),
         },
         recruitedSumiwatari: false,
