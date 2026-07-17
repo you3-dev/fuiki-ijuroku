@@ -16,6 +16,8 @@ import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
+import { EnemyIntentCue } from './EnemyIntentCue'
+import { towerEnemyIntent } from './enemyIntent'
 
 const allySkill = {
   tomoshigoke: 'calming-glimmer',
@@ -274,6 +276,7 @@ export function TowerBattlePanel({
           compact
         />
       </div>
+      <EnemyIntentCue intent={towerEnemyIntent(battle.round, battle.mistTurns)} />
       <p className="tower-risk-note">倒してしまうと協力を求められません。攻撃は警戒度も上げます。</p>
 
       <div className="tower-command-conditions" aria-label="協力条件">

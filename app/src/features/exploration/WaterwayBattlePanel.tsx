@@ -20,6 +20,8 @@ import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
+import { EnemyIntentCue } from './EnemyIntentCue'
+import { waterwayEnemyIntent } from './enemyIntent'
 
 const waterwayTargetIds: WaterwayTargetId[] = [
   'pollution-mass',
@@ -351,6 +353,9 @@ export function WaterwayBattlePanel({
           )
         })}
       </div>
+      <EnemyIntentCue
+        intent={waterwayEnemyIntent(battle.targets['pollution-mass'].pollution > 0)}
+      />
       <p className="tower-risk-note">生態HPを削ると調査失敗です。「澄み流し」で汚染値だけを下げます。</p>
 
       <div className="tower-command-conditions" aria-label="安全確保条件">

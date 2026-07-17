@@ -13,6 +13,8 @@ import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
+import { EnemyIntentCue } from './EnemyIntentCue'
+import { practiceEnemyIntent } from './enemyIntent'
 
 const allyInfo = {
   tomoshigoke: {
@@ -124,6 +126,8 @@ export function SumiwatariPracticePanel({
         <BattleValueBar value={battle.enemyHp} max={battle.enemyMaxHp} label="汚染をまとったキリハネのHP" />
         <strong>{battle.enemyHp}/{battle.enemyMaxHp}</strong>
       </div>
+
+      <EnemyIntentCue intent={practiceEnemyIntent(battle.round)} />
 
       {battle.round > 1 && (
         <section className="normal-battle-result">

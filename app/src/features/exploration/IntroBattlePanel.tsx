@@ -10,6 +10,8 @@ import { BattleCommandMenu } from './BattleCommandMenu'
 import { BattleImpactStrip } from './BattleImpactStrip'
 import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
+import { EnemyIntentCue } from './EnemyIntentCue'
+import { introEnemyIntent } from './enemyIntent'
 
 const allyInfo = {
   tomoshigoke: {
@@ -128,6 +130,8 @@ export function IntroBattlePanel({
         <BattleValueBar value={battle.enemyHp} max={battle.enemyMaxHp} label="若いキリハネのHP" />
         <strong>{battle.enemyHp}/{battle.enemyMaxHp}</strong>
       </div>
+
+      <EnemyIntentCue intent={introEnemyIntent(battle.round)} />
 
       {battle.round > 1 && (
         <section className="normal-battle-result">
