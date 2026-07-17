@@ -15,6 +15,8 @@ import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
 import { EnemyIntentCue } from './EnemyIntentCue'
 import { practiceEnemyIntent } from './enemyIntent'
+import { DefenseCoverageCue } from './DefenseCoverageCue'
+import { singleTargetCoverage } from './defenseCoverage'
 
 const allyInfo = {
   tomoshigoke: {
@@ -96,6 +98,17 @@ export function SumiwatariPracticePanel({
   const hint = pollutionPresent
     ? 'トモシゴケが汚染中。スミワタリの「特技」から澄み流しを使います。'
     : '汚染は解除されました。3体の攻撃でキリハネを退かせます。'
+  const intentTargetId: SumiPracticeAllyId = battle.round % 2 === 1
+    ? 'sumiwatari'
+    : 'numakuguri'
+  const defenseCoverage = singleTargetCoverage({
+    targetName: allyInfo[intentTargetId].name,
+    targetDefending: battle.plans[intentTargetId] === 'defend',
+    protectorPlanned: battle.plans.numakuguri === 'burrow-guard',
+    protectedTargetName: 'スミワタリ',
+    plansComplete: Object.values(battle.plans).every((plan) => plan !== null),
+    mismatchedProtectionMitigates: intentTargetId === 'numakuguri',
+  })
 
   async function choosePlan(actorId: SumiPracticeAllyId, plan: SumiPracticePlan) {
     const changed = await runAction({ type: 'setSumiPracticePlan', actorId, plan })
@@ -239,6 +252,8 @@ export function SumiwatariPracticePanel({
           </p>
         ))}
       </div>
+
+      <DefenseCoverageCue coverage={defenseCoverage} />
 
       <button
         className="primary-button full-button practice-resolve-button"

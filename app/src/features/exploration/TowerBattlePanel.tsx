@@ -18,6 +18,12 @@ import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
 import { EnemyIntentCue } from './EnemyIntentCue'
 import { towerEnemyIntent } from './enemyIntent'
+import { DefenseCoverageCue } from './DefenseCoverageCue'
+import {
+  areaAttackCoverage,
+  setupTurnCoverage,
+  singleTargetCoverage,
+} from './defenseCoverage'
 
 const allySkill = {
   tomoshigoke: 'calming-glimmer',
@@ -246,6 +252,29 @@ export function TowerBattlePanel({
   const activeUnit = battle.combatants[activeActor]
   const activeSkill = skillDefinitions[allySkill[activeActor]]
   const commandsLocked = battle.phase === 'committed' || activeUnit.currentHp <= 0
+  const towerCoverage = battle.mistTurns === 0
+    ? setupTurnCoverage()
+    : battle.round % 2 === 1
+      ? areaAttackCoverage(
+          allyIds.filter((actorId) =>
+            battle.combatants[actorId].currentHp > 0 &&
+            battle.plans[actorId].kind === 'defend'
+          ).length,
+          allyIds.filter((actorId) => battle.combatants[actorId].currentHp > 0).length,
+        )
+      : singleTargetCoverage({
+          targetName: 'トモシゴケ',
+          targetDefending: battle.plans.tomoshigoke.kind === 'defend',
+          protectorPlanned:
+            battle.plans.numakuguri.kind === 'skill' &&
+            battle.plans.numakuguri.skillId === 'burrow-guard',
+          protectedTargetName:
+            battle.plans.numakuguri.kind === 'skill' &&
+            battle.plans.numakuguri.skillId === 'burrow-guard'
+              ? combatants[battle.plans.numakuguri.targetId as AllyCombatantId].name
+              : '',
+          plansComplete: true,
+        })
 
   return (
     <section className="tower-command-battle" aria-labelledby="tower-battle-title">
@@ -441,6 +470,8 @@ export function TowerBattlePanel({
           </p>
         ))}
       </div>
+
+      <DefenseCoverageCue coverage={towerCoverage} />
 
       <details className="tower-strategy-hint">
         <summary>作戦ヒントを見る</summary>

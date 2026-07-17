@@ -12,6 +12,8 @@ import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
 import { EnemyIntentCue } from './EnemyIntentCue'
 import { introEnemyIntent } from './enemyIntent'
+import { DefenseCoverageCue } from './DefenseCoverageCue'
+import { singleTargetCoverage } from './defenseCoverage'
 
 const allyInfo = {
   tomoshigoke: {
@@ -101,6 +103,17 @@ export function IntroBattlePanel({
             battle.plans.tomoshigoke === null
           ? 'トモシゴケの「特技」には、HPを回復する灯苔の雫があります。'
           : '役割と残りHPを見て、2体の行動を決めます。'
+  const intentTargetId: IntroBattleAllyId = battle.round % 2 === 1
+    ? 'tomoshigoke'
+    : 'numakuguri'
+  const defenseCoverage = singleTargetCoverage({
+    targetName: allyInfo[intentTargetId].name,
+    targetDefending: battle.plans[intentTargetId] === 'defend',
+    protectorPlanned: battle.plans.numakuguri === 'burrow-guard',
+    protectedTargetName: 'トモシゴケ',
+    plansComplete: Object.values(battle.plans).every((plan) => plan !== null),
+    mismatchedProtectionMitigates: intentTargetId === 'numakuguri',
+  })
 
   async function choosePlan(actorId: IntroBattleAllyId, plan: IntroBattlePlan) {
     const changed = await runAction({ type: 'setIntroBattlePlan', actorId, plan })
@@ -236,6 +249,8 @@ export function IntroBattlePanel({
           </p>
         ))}
       </div>
+
+      <DefenseCoverageCue coverage={defenseCoverage} />
 
       <button
         className="primary-button full-button"

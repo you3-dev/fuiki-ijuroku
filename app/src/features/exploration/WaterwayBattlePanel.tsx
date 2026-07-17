@@ -22,6 +22,8 @@ import { BattleValueBar } from './BattleValueBar'
 import { AllyStateBadge } from './AllyStateBadge'
 import { EnemyIntentCue } from './EnemyIntentCue'
 import { waterwayEnemyIntent } from './enemyIntent'
+import { DefenseCoverageCue } from './DefenseCoverageCue'
+import { waterwayCoverage } from './defenseCoverage'
 
 const waterwayTargetIds: WaterwayTargetId[] = [
   'pollution-mass',
@@ -290,6 +292,27 @@ export function WaterwayBattlePanel({
   const activeUnit = battle.allies[activeActor]
   const activeSkill = skillDefinitions[allySkill[activeActor]]
   const commandsLocked = battle.phase === 'committed' || activeUnit.currentHp <= 0
+  const numakuguriPlan = battle.plans.numakuguri
+  const sumiwatariPlan = battle.plans.sumiwatari
+  const pollutionSpreading = battle.targets['pollution-mass'].pollution > 0
+  const attackCovered =
+    battle.plans.tomoshigoke.kind === 'defend' ||
+    (numakuguriPlan.kind === 'skill' &&
+      numakuguriPlan.skillId === 'burrow-guard' &&
+      numakuguriPlan.targetId === 'tomoshigoke')
+  const cleanseAmount = battle.observedSource ? 60 : 40
+  const pollutionCovered =
+    !pollutionSpreading ||
+    (sumiwatariPlan.kind === 'skill' &&
+      sumiwatariPlan.skillId === 'clarifying-flow' &&
+      sumiwatariPlan.targetId === 'pollution-mass' &&
+      battle.allies.sumiwatari.vitality >= skillDefinitions['clarifying-flow'].vitalityCost &&
+      battle.targets['pollution-mass'].pollution <= cleanseAmount)
+  const defenseCoverage = waterwayCoverage(
+    attackCovered,
+    pollutionCovered,
+    pollutionSpreading,
+  )
   const clarifyingTargets: Array<{
     id: WaterwayPlanTargetId
     name: string
@@ -572,6 +595,8 @@ export function WaterwayBattlePanel({
           </p>
         ))}
       </div>
+
+      <DefenseCoverageCue coverage={defenseCoverage} />
 
       <details className="tower-strategy-hint">
         <summary>作戦ヒントを見る</summary>
