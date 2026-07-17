@@ -348,19 +348,21 @@ export function ExplorationPage() {
               <figcaption>汚染濾過・水路浄化個体</figcaption>
             </figure>
             <section className="cooperation-reasons" aria-label="スミワタリが応じた理由">
-              <small>スミワタリが応じた理由</small>
-              <ul>
-                <li>苦しみの原因を観察した</li>
-                <li>濾過膜の汚染を取り除いた</li>
-                <li>光で敵意がないことを伝えた</li>
-              </ul>
-              <strong>スミワタリは自ら調査隊についてきました。</strong>
+              <small>協力成立</small>
+              <strong>傷つけず助けたことで、自ら同行を選びました。</strong>
+              <details>
+                <summary>スミワタリが応じた理由</summary>
+                <ul>
+                  <li>苦しみの原因を観察した</li>
+                  <li>濾過膜の汚染を取り除いた</li>
+                  <li>光で敵意がないことを伝えた</li>
+                </ul>
+              </details>
             </section>
             <div className="party-joined" aria-label="前衛3体が揃いました">
               <span>トモシゴケ</span><span>ヌマクグリ</span><span className="new-member">スミワタリ<small>NEW</small></span>
             </div>
             <div className="skill-unlock"><span>技能解放</span><strong>澄み流し</strong><small>汚染を取り除き、仲間の状態を整える</small></div>
-            <p>スミワタリはトモシゴケの光を追い、前衛の空き枠へ入りました。</p>
             <label htmlFor="creature-nickname">記録する呼称</label>
             <input
               id="creature-nickname"
