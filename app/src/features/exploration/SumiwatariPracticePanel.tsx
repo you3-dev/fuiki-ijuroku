@@ -146,7 +146,10 @@ export function SumiwatariPracticePanel({
         <section className="normal-battle-result">
           <small>前のラウンド</small>
           <BattleImpactStrip lines={battle.lastLog} sequence={battle.round} status="行動結果を更新" />
-          <ul>{battle.lastLog.map((line) => <li key={line}>{line}</li>)}</ul>
+          <details className="normal-result-details">
+            <summary>詳しい結果</summary>
+            <ul>{battle.lastLog.map((line) => <li key={line}>{line}</li>)}</ul>
+          </details>
         </section>
       )}
 

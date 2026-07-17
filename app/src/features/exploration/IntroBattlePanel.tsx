@@ -96,9 +96,9 @@ export function IntroBattlePanel({
   )
   const tutorialHint =
     battle.round === 1 && battle.plans.tomoshigoke === null
-      ? 'トモシゴケを選択中。「たたかう」で基礎攻撃を試せます。'
+      ? '敵はトモシゴケ狙い。「防御」で被害を減らします。'
       : battle.round === 1 && battle.plans.numakuguri === null
-        ? '次はヌマクグリ。「防御」で被害を減らせます。'
+        ? '次はヌマクグリ。「たたかう」で基礎攻撃を試します。'
         : battle.allies.tomoshigoke.currentHp < battle.allies.tomoshigoke.maxHp &&
             battle.plans.tomoshigoke === null
           ? 'トモシゴケの「特技」には、HPを回復する灯苔の雫があります。'
@@ -150,7 +150,10 @@ export function IntroBattlePanel({
         <section className="normal-battle-result">
           <small>前のラウンド</small>
           <BattleImpactStrip lines={battle.lastLog} sequence={battle.round} status="行動結果を更新" />
-          <ul>{battle.lastLog.map((line) => <li key={line}>{line}</li>)}</ul>
+          <details className="normal-result-details">
+            <summary>詳しい結果</summary>
+            <ul>{battle.lastLog.map((line) => <li key={line}>{line}</li>)}</ul>
+          </details>
         </section>
       )}
 

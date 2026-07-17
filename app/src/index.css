@@ -2745,6 +2745,22 @@ ul.battle-log {
   line-height: 1.5;
 }
 
+.normal-result-details {
+  margin-top: 0.38rem;
+}
+
+.normal-result-details > summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--color-ink-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.normal-result-details[open] > summary {
+  color: var(--color-water);
+}
+
 .battle-impact-strip {
   display: flex;
   flex-wrap: wrap;
