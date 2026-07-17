@@ -175,6 +175,9 @@ function planLabel(plan: WaterwayPlannedAction): string {
       : targetNames[plan.targetId as WaterwayTargetId]
     return `${skillName} → ${targetName}`
   }
+  if (plan.skillId === 'burrow-guard') {
+    return `${skillName} → ${combatants[plan.targetId as AllyCombatantId].name}`
+  }
   return skillName
 }
 
@@ -436,7 +439,9 @@ export function WaterwayBattlePanel({
               ) : plan.kind === 'defend' ? (
                 <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
               ) : actorId === 'numakuguri' && plan.kind === 'skill' ? (
-                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+                <AllyStateBadge tone="protect">
+                  {combatants[plan.targetId as AllyCombatantId].name}を守る
+                </AllyStateBadge>
               ) : (
                 <small>予定：{planNames[plan.kind]}</small>
               )}
@@ -515,7 +520,7 @@ export function WaterwayBattlePanel({
                 activeActor === 'tomoshigoke'
                   ? '野生スミワタリを鎮め、警戒度を下げる'
                   : activeActor === 'numakuguri'
-                    ? 'トモシゴケへの攻撃を引き受ける'
+                    ? `${combatants[fixedSkillPlan(battle, activeActor).targetId as AllyCombatantId].name}への攻撃を引き受ける`
                     : '対象の汚染を除去する'
               }</span>
               <small>活性{activeSkill.vitalityCost}</small>

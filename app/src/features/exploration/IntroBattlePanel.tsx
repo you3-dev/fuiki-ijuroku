@@ -41,6 +41,14 @@ const planNames: Record<IntroBattlePlan, string> = {
   'mud-screen': '泥幕',
 }
 
+function introPlanLabel(actorId: IntroBattleAllyId, plan: IntroBattlePlan | null): string {
+  if (!plan) return '未選択'
+  if (actorId === 'numakuguri' && plan === 'burrow-guard') {
+    return '身代わり潜行 → トモシゴケ'
+  }
+  return planNames[plan]
+}
+
 export function IntroBattlePanel({
   runAction,
 }: {
@@ -161,7 +169,7 @@ export function IntroBattlePanel({
               {plan === 'defend' ? (
                 <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
               ) : actorId === 'numakuguri' && plan === 'burrow-guard' ? (
-                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+                <AllyStateBadge tone="protect">トモシゴケを守る</AllyStateBadge>
               ) : (
                 <small>{plan ? `予定：${planNames[plan]}` : allyInfo[actorId].role}</small>
               )}
@@ -207,7 +215,7 @@ export function IntroBattlePanel({
                   onClick={() => void choosePlan(activeActor, plan)}
                 >
                   <strong>{skill.name}</strong>
-                  <span>{skill.effect}</span>
+                  <span>{plan === 'burrow-guard' ? 'トモシゴケへの攻撃を引き受ける' : skill.effect}</span>
                   <small>活性{skill.cost}</small>
                 </button>
               )
@@ -220,7 +228,7 @@ export function IntroBattlePanel({
         {(Object.keys(allyInfo) as IntroBattleAllyId[]).map((actorId) => (
           <p key={actorId}>
             <span>{allyInfo[actorId].name}</span>
-            <strong>{battle.plans[actorId] ? planNames[battle.plans[actorId]] : '未選択'}</strong>
+            <strong>{introPlanLabel(actorId, battle.plans[actorId])}</strong>
           </p>
         ))}
       </div>

@@ -42,6 +42,14 @@ const planNames: Record<SumiPracticePlan, string> = {
 
 const actorOrder: SumiPracticeAllyId[] = ['sumiwatari', 'tomoshigoke', 'numakuguri']
 
+function practicePlanLabel(actorId: SumiPracticeAllyId, plan: SumiPracticePlan | null): string {
+  if (!plan) return '未選択'
+  if (actorId === 'numakuguri' && plan === 'burrow-guard') {
+    return '身代わり潜行 → スミワタリ'
+  }
+  return planNames[plan]
+}
+
 export function SumiwatariPracticePanel({
   runAction,
 }: {
@@ -159,7 +167,7 @@ export function SumiwatariPracticePanel({
               ) : plan === 'defend' ? (
                 <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
               ) : actorId === 'numakuguri' && plan === 'burrow-guard' ? (
-                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+                <AllyStateBadge tone="protect">スミワタリを守る</AllyStateBadge>
               ) : (
                 <small>{plan ? `予定：${planNames[plan]}` : allyInfo[actorId].role}</small>
               )}
@@ -209,7 +217,9 @@ export function SumiwatariPracticePanel({
               )}
             >
               <strong>{activeInfo.skill.name}</strong>
-              <span>{activeInfo.skill.effect}</span>
+              <span>{activeInfo.skill.plan === 'burrow-guard'
+                ? 'スミワタリへの攻撃を引き受ける'
+                : activeInfo.skill.effect}</span>
               <small>活性{activeInfo.skill.cost}</small>
             </button>
           </div>
@@ -221,7 +231,7 @@ export function SumiwatariPracticePanel({
         {actorOrder.map((actorId) => (
           <p key={actorId}>
             <span>{allyInfo[actorId].name}</span>
-            <strong>{battle.plans[actorId] ? planNames[battle.plans[actorId]] : '未選択'}</strong>
+            <strong>{practicePlanLabel(actorId, battle.plans[actorId])}</strong>
           </p>
         ))}
       </div>

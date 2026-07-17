@@ -141,6 +141,16 @@ function skillPlanFor(
   return { kind: 'skill', skillId, targetId }
 }
 
+function towerPlanLabel(plan: PlannedAction): string {
+  if (plan.kind === 'defend') return planNames.defend
+  if (plan.kind === 'basic') return planNames.basic
+  const skillName = skillDefinitions[plan.skillId].name
+  if (plan.skillId === 'burrow-guard') {
+    return `${skillName} → ${combatants[plan.targetId as AllyCombatantId].name}`
+  }
+  return skillName
+}
+
 export function TowerBattlePanel({
   runAction,
 }: {
@@ -366,7 +376,9 @@ export function TowerBattlePanel({
               {plan.kind === 'defend' ? (
                 <AllyStateBadge tone="guard">防御予定</AllyStateBadge>
               ) : actorId === 'numakuguri' && plan.kind === 'skill' ? (
-                <AllyStateBadge tone="protect">かばう予定</AllyStateBadge>
+                <AllyStateBadge tone="protect">
+                  {combatants[plan.targetId as AllyCombatantId].name}を守る
+                </AllyStateBadge>
               ) : (
                 <small>予定：{planNames[plan.kind]}</small>
               )}
@@ -409,7 +421,7 @@ export function TowerBattlePanel({
                 activeActor === 'tomoshigoke'
                   ? 'キリハネを鎮め、警戒度を下げる'
                   : activeActor === 'numakuguri'
-                    ? '傷ついた仲間をかばう'
+                    ? `${combatants[skillPlanFor(battle, activeActor).targetId as AllyCombatantId].name}への攻撃を引き受ける`
                     : '傷ついた仲間を小回復'
               }</span>
               <small>活性{activeSkill.vitalityCost}</small>
@@ -422,11 +434,7 @@ export function TowerBattlePanel({
         {allyIds.map((actorId) => (
           <p key={actorId}>
             <span>{combatants[actorId].name}</span>
-            <strong>{
-              battle.plans[actorId].kind === 'skill'
-                ? skillDefinitions[battle.plans[actorId].skillId].name
-                : planNames[battle.plans[actorId].kind]
-            }</strong>
+            <strong>{towerPlanLabel(battle.plans[actorId])}</strong>
           </p>
         ))}
       </div>
