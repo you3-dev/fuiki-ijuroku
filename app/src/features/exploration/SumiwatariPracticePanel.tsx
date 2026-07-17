@@ -253,7 +253,20 @@ export function SumiwatariPracticePanel({
         ))}
       </div>
 
-      <DefenseCoverageCue coverage={defenseCoverage} />
+      <DefenseCoverageCue
+        coverage={defenseCoverage}
+        recommendation={
+          defenseCoverage.status === 'partial' || defenseCoverage.status === 'mismatch'
+            ? pollutionPresent
+              ? 'スミワタリ：澄み流し'
+              : `${allyInfo[intentTargetId].name}：防御`
+            : undefined
+        }
+        onRecommendation={() => {
+          setActiveActor(pollutionPresent ? 'sumiwatari' : intentTargetId)
+          setSkillOpen(pollutionPresent)
+        }}
+      />
 
       <button
         className="primary-button full-button practice-resolve-button"

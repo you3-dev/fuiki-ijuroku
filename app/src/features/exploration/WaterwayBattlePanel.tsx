@@ -313,6 +313,14 @@ export function WaterwayBattlePanel({
     pollutionCovered,
     pollutionSpreading,
   )
+  const waterwayRecommendation =
+    defenseCoverage.status === 'partial' || defenseCoverage.status === 'mismatch'
+      ? pollutionSpreading && !pollutionCovered
+        ? 'スミワタリ：澄み流し → 汚染塊'
+        : !attackCovered
+          ? 'トモシゴケ：防御'
+          : undefined
+      : undefined
   const clarifyingTargets: Array<{
     id: WaterwayPlanTargetId
     name: string
@@ -596,7 +604,21 @@ export function WaterwayBattlePanel({
         ))}
       </div>
 
-      <DefenseCoverageCue coverage={defenseCoverage} />
+      <DefenseCoverageCue
+        coverage={defenseCoverage}
+        recommendation={waterwayRecommendation}
+        onRecommendation={() => {
+          if (pollutionSpreading && !pollutionCovered) {
+            setActiveActor('sumiwatari')
+            setSkillOpen(true)
+            setTargetMode('clarifying-flow')
+            return
+          }
+          setActiveActor('tomoshigoke')
+          setSkillOpen(false)
+          setTargetMode(null)
+        }}
+      />
 
       <details className="tower-strategy-hint">
         <summary>作戦ヒントを見る</summary>

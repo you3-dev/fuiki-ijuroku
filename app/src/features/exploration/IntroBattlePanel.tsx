@@ -250,7 +250,18 @@ export function IntroBattlePanel({
         ))}
       </div>
 
-      <DefenseCoverageCue coverage={defenseCoverage} />
+      <DefenseCoverageCue
+        coverage={defenseCoverage}
+        recommendation={
+          defenseCoverage.status === 'partial' || defenseCoverage.status === 'mismatch'
+            ? `${allyInfo[intentTargetId].name}：防御`
+            : undefined
+        }
+        onRecommendation={() => {
+          setActiveActor(intentTargetId)
+          setSkillOpen(false)
+        }}
+      />
 
       <button
         className="primary-button full-button"

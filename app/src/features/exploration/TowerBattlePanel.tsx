@@ -275,6 +275,14 @@ export function TowerBattlePanel({
               : '',
           plansComplete: true,
         })
+  const towerRecommendedActor = battle.mistTurns === 0
+    ? null
+    : battle.round % 2 === 1
+      ? allyIds.find((actorId) =>
+          battle.combatants[actorId].currentHp > 0 &&
+          battle.plans[actorId].kind !== 'defend'
+        ) ?? null
+      : 'tomoshigoke'
 
   return (
     <section className="tower-command-battle" aria-labelledby="tower-battle-title">
@@ -471,7 +479,20 @@ export function TowerBattlePanel({
         ))}
       </div>
 
-      <DefenseCoverageCue coverage={towerCoverage} />
+      <DefenseCoverageCue
+        coverage={towerCoverage}
+        recommendation={
+          towerRecommendedActor &&
+          (towerCoverage.status === 'partial' || towerCoverage.status === 'mismatch')
+            ? `${combatants[towerRecommendedActor].name}：防御`
+            : undefined
+        }
+        onRecommendation={() => {
+          if (!towerRecommendedActor) return
+          setActiveActor(towerRecommendedActor)
+          setSkillOpen(false)
+        }}
+      />
 
       <details className="tower-strategy-hint">
         <summary>作戦ヒントを見る</summary>
